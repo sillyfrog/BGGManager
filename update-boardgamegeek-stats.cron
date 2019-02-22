@@ -1,0 +1,3 @@
+#!/bin/sh
+date >> /var/tmp/updategames.log
+/usr/bin/docker exec boardgamegeek /app/updategames.py >> /var/tmp/updategames.log

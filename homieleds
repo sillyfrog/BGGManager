@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+import argparse
+import paho.mqtt.publish
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Activate listed LED's via mqtt.")
+    parser.add_argument(
+        "leds",
+        metavar="N",
+        nargs="+",
+        help="LED's to activate, in the format <strip>,<led>.",
+    )
+    parser.add_argument(
+        "-H",
+        "--host",
+        dest="host",
+        default="127.0.0.1",
+        help="MQTT host (default: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "-t",
+        "--topic",
+        default="homie/games-leds/",
+        help="Topic to publish LED updates (default: homie/games-leds/)",
+    )
+
+    args = parser.parse_args()
+
+    topic = args.topic
+    if not topic.endswith("/"):
+        topic += "/"
+
+    strips = {}
+    for led in args.leds:
+        strip, led = led.split(",")
+        if not strip.isdigit() or not strip.isdigit():
+            # This will also catch and ignore negative numbers
+            continue
+        stripleds = strips.get(strip, [])
+        stripleds.append(led)
+        strips[strip] = stripleds
+
+    msgs = []
+    for strip, leds in strips.items():
+        msgs.append(
+            {
+                "topic": topic + "strip/strip_{}/set".format(strip),
+                "payload": ",".join(leds),
+            }
+        )
+    paho.mqtt.publish.multiple(msgs, hostname=args.host)
+
+
+if __name__ == "__main__":
+    main()

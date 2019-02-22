@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>All Games</title>
+  <!--
+  <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
+    -->
+
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.css" />
+
+  <script type="text/javascript"
+    src="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
+
+
+  <link rel="stylesheet" href="/static/style.css" />
+  <script>
+    var tempp = [];
+    var gamestable;
+    var DEFAULT_HIDDEN = new Set(["Location", "Max Players", "Minutes", "Complexity", "Last Play", "Group", "Mechanics/Categories"]);
+    var FILTER_COL = new Set(['Group', 'Status']);
+    $(document).ready(function () {
+      $("#gamestable tbody tr").on("click", function (event) {
+        bggid = parseInt(this.attributes['_gameid'].value)
+        location = 'game/' + bggid;
+      });
+      gamestable = $('#gamestable').DataTable({
+        paging: false,
+        "dom": "<'row'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 hidebuttons' l>>",
+        "order": [[1, "asc"]],
+      });
+
+      var buttondiv = $("div.hidebuttons");
+      gamestable.columns().every(function () {
+        var column = this;
+        var header = column.header();
+
+        // Setup the show/hide buttons
+        var newbutton = $("<button type='button' class='btn btn-primary btn-sm toggle-vis'></button>");
+        var txt = header.innerText;
+        newbutton.text(txt);
+        tempp.push(column);
+        newbutton.attr("data-column", column[0][0]);
+        newbutton.on("click", toggleVis);
+        buttondiv.append(newbutton);
+        buttondiv.append(" ");
+        if (DEFAULT_HIDDEN.has(txt)) {
+          newbutton.trigger("click");
+        }
+
+        // Provide a filter dropdown as required
+        if (FILTER_COL.has(txt)) {
+          $("<br />").appendTo(header);
+          var select = $('<select><option value=""></option></select>')
+            .appendTo($(header))
+            .on('change', function () {
+              var val = $.fn.dataTable.util.escapeRegex(
+                $(this).val()
+              );
+              column
+                .search(val ? '^' + val + '$' : '', true, false)
+                .draw();
+            });
+          column.data().unique().sort().each(function (d, j) {
+            select.append('<option value="' + d + '">' + d + '</option>')
+          });
+        }
+        if (txt == "Mechanics/Categories") {
+          $("<br />").appendTo(header);
+          var select = $('<select><option value=""></option></select>')
+            .appendTo($(header))
+            .on('change', function () {
+              var val = $.fn.dataTable.util.escapeRegex(
+                $(this).val()
+              );
+              column
+                .search(val ? val : '', true, false)
+                .draw();
+            });
+          var optionsset = new Set();
+          var cells = column.nodes();
+          for (i = 0; i < cells.length; i++) {
+            cell = cells[i];
+            for (s of cell.getElementsByTagName("span")) {
+              optionsset.add(s.innerText);
+            }
+          }
+          var options = Array.from(optionsset);
+          options.sort();
+          for (d of options) {
+            select.append('<option value="' + d + '">' + d + '</option>');
+          }
+        }
+      });
+    });
+    function toggleVis(e) {
+      e.preventDefault();
+      // Get the column API object
+      var column = gamestable.column($(this).attr('data-column'));
+      // Toggle the visibility
+      if (column.visible()) {
+        column.visible(false);
+        e.target.classList.remove("btn-default");
+        e.target.classList.add("btn-secondary");
+      } else {
+        column.visible(true);
+        e.target.classList.remove("btn-secondary");
+        e.target.classList.add("btn-default");
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div class="row flex-nowrap justify-content-between align-items-center">
+    <div class="col-4 pt-1">
+    </div>
+    <div class="col-4 text-center">
+      <h1>All Games</h1>
+    </div>
+    <div class="col-4 d-flex justify-content-end align-items-center">
+      <a class="btn btn-light" href="/layout">Layout</a>&nbsp;
+      <a class="btn btn-light" href="/sync">Force Sync</a>&nbsp;
+      <a class="btn btn-light" href="/groups">Game Groups</a>
+    </div>
+  </div>
+  <table id="gamestable" class="table table-hover" style="width:98%">
+    <thead>
+      <tr>
+        <th>Icon</th>
+        <th>Name</th>
+        <th>Group</th>
+        <th>Complexity</th>
+        <th>Last Play</th>
+        <th>Location</th>
+        <th>Max Players</td>
+        <th>Minutes</th>
+        <th>Status</th>
+        <th>Mechanics/Categories</th>
+      </tr>
+    </thead>
+    <tbody style="cursor: pointer;">
+      {% for game in games %}
+      <tr _gameid="{{ game.bggid }}">
+        <td style="text-align: center;"><img src="{{ game.thumburl }}" onload="this.width/=2;"></td>
+        {# <td><a href="/game/{{ game.bggid }}">{{ game.name }}</a></td> #}
+        <td>{{ game.name }}</a></td>
+        <td>{{ game.groupname }}</td>
+        <td>{{ game.complexitytxt }}</td>
+        <td>{{ game.lastplaytxt }}</td>
+        <td>{{ game.rowcoltxt }}</td>
+        <td>{{ game.maxplayers }}</td>
+        <td>{{ game.playingtime }}</td>
+        <td>{{ game.statustxt }}</td>
+        <td style="font-size: 50%;">
+          {% for mech in game.mechanics %}
+          <span>{{ mech }}</span>{{ "," if not loop.last }}
+          {% endfor %}
+          <br />
+          {% for cat in game.categories%}
+          <span>{{ cat }}</span>{{ "," if not loop.last }}
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+
+</html>

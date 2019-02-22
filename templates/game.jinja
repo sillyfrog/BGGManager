@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
+    <title>{{ game.name }} </title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    
+    <script type="text/javascript" src="/static/typeahead.jquery.js"></script>
+ 
+    <link rel="stylesheet" href="/static/style.css" />
+    <script>
+      var bggid = {{ game.bggid }};
+    </script>
+    <script type="text/javascript" src="/static/game.js?nocache5"></script>
+</head>
+<body onLoad="locategame();updatePlays();">
+  <a name="top"></a>
+    <table>
+      <tr>
+        <td>
+          <a href="{{ game.imageurl }}"><img src="{{ game.thumburl }}"></a>
+        </td>
+        <td>
+          <h1> {{ game.name }} </h1>
+        </td>
+      </tr>
+    </table>
+    <p>&nbsp;</p>
+    <button onclick="locategame();" id="locate" class="btn btn-primary">Locate Me!</button>
+    <ul>
+    {% for k in ['groupname','ratingtxt', 'complexitytxt', 'playingtimetxt', 'statustxt', 'minplayers', 'maxplayers', 'minage', 'categoriestxt', 'mechanicstxt', 'lastplaytxt'] %}
+      <li><b>{{ formatkey(k) }}</b>: {{ game[k] }} </li>
+    {% endfor %}
+    {% if game.expansionname %}
+      <li><b>Expansion For</b>: <a href="/game/{{ game.expansionbggid }}">{{ game.expansionname }}</a></li>
+    {% endif %}
+    {% if game.expansions %}
+      <li><b>Available Expansions</b>: 
+      <ul>
+        {% for expansion in game.expansions %}
+          <li><a href="/game/{{ expansion.bggid }}">{{ expansion.name }}</a>
+        {% endfor %}
+        </ul>
+      </li>
+    {% endif %}
+    {% if game.bggid > 0 %}
+      <li><b>Board Game Geek ID</b>: <a href="https://boardgamegeek.com/boardgame/{{ game.bggid }}">{{ game.bggid }}</a></li>
+    {% endif %}
+    </ul>
+    {#
+    XXX Start
+            {% for group in groups %}
+              <button onClick="setgroup({{ group.id }});"> {{ group.name }} </button>
+            {% endfor %}
+            <script>
+            function setgroup(id) {
+              document.getElementById("groupid").value = id;
+              updateinfo();
+            }
+            </script>
+    XXX End
+    #}
+    {{ game.description }}
+    <p>&nbsp;</p>
+    <div id="logplaydiv" class="card mb-4 shadow-sm" style="display:none;">
+      <div class="card-header">
+        <a name="logplay"></a><h4 class="my-0 font-weight-normal">Record New Play</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="date">Date</label>
+            <input type="date" class="form-control" id="date" placeholder="" value="" required="">
+            <div class="invalid-feedback">
+              Valid date is required.
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="comments">Comments</label>
+            <textarea class="form-control" id="comments" placeholder="" value=""></textarea>
+          </div>
+                  <table class="table table-sm ">
+            <thead>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Win</th>
+              <th>New</th>
+              <th>Colour</th>
+            </thead>
+            <tbody id="newplaybody">
+            </tbody>
+          </table>
+          <button id="recordplaybtn" class="btn btn-primary btn-lg btn-block" onClick="recordPlay();">Record Play</button>
+        </div>
+      </div>
+    </div>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <div style="position: fixed; top: 10px; right: 10px;"><button id="logplaybtn" class="btn btn-primary" onClick="logplay();">Log Play</button></div>
+        <h4 class="my-0 font-weight-normal">Logged Plays</h4>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm ">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Colour</th>
+            </tr>
+          </thead>
+          <tbody id="plays">
+            <tr>
+              <td colspan=4>Loading...</td>
+            <tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+    <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Details</h4>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered "><tr>
+        <td>
+        <h5>BoxThrone Location</h5>
+        <p class="card-text">
+          Column: <input style="width: 3em;" id="col" type="number" pattern="\d*" min=0 max=100 value="{{ game.col }}">
+          Row: <input style="width: 3em;" id="row" type="number" pattern="\d*" min=0 max=100 value="{{ game.row }}">
+        </p>
+        </td>
+        <td>
+        <h5>Group</h5>
+        <p class="card-text">
+          <select class="custom-select" id="groupid">
+            {% if not game.groupid %}
+              <option selected>Choose...</option>
+            {% endif %}
+            {% for group in groups %}
+              <option value="{{ group.id }}" {% if game.groupid == group.id %}selected {% endif %}>{{ group.name }}</option>
+            {% endfor %}
+          </select>
+        </p>
+        </td>
+        </tr>
+        </table>
+        <p>
+          <button id="updateinfo" onclick="updateinfo();" class="btn btn-primary">Update</button>
+        </p>
+      </div>
+    </div>
+    <p>&nbsp;</p>
+</body>
+</html>
+
+
+
