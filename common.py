@@ -27,6 +27,9 @@ GAMES_CACHE_PATH = DIR_BASE / "games"
 
 _dbconnection = None
 
+# Make sure the directories exist at startup, so do not run in a main function
+THUMBS_PATH.mkdir(parents=True, exist_ok=True)
+
 
 class PostgresRetry(postgres.Postgres):
     def doretries(self, func, *args, **kwargs):
@@ -486,19 +489,14 @@ def postplay(playdata):
     # Now get a session cookie, and post the data
     s = requests.Session()
     r = s.post(
-        "https://boardgamegeek.com/login/api/v1",
-        json={
-            "credentials": {
-                "username": CONFIG["username"],
-                "password": CONFIG["password"],
-            }
-        },
+        "https://boardgamegeek.com/login",
+        {"username": CONFIG["username"], "password": CONFIG["password"]},
     )
     if r.status_code != 200:
-        raise Exception("Error logging in: {}".format(r.json()))
+        raise Exception("Error logging in ({}): {}".format(r.status_code, r.text))
     r = s.post("https://boardgamegeek.com/geekplay.php", json=postdata)
     if r.status_code != 200:
-        raise Exception("Error posting data: {}".format(r.json()))
+        raise Exception("Error posting data ({}): {}".format(r.status_code, r.text))
     return int(r.json()["playid"])
 
 
