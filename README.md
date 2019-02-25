@@ -33,15 +33,15 @@ There is a sample `config.json`, I would suggest starting with this for your env
 - _dburl_: The URL to connect to the Postgres server, update for what you have configured for your DB.
 - _ledscommand_: this is the command to call when you want to highlight your game - currently all that's included is `homieleds`. The program will be called with each argument in the list, and to the end will be appended the `<col>,<led>` for each LED to highlight.
 - _columns_: This outlines how each column of games is configure (for example, in your BoxThrone), a list of JSON objects. Each element has the follow attributes:
- - _id_: The numeric id of the column.
- - _name_: The name of the column you want to display in the web interface, I have just used the ID's, but it's designed to be flexible.
- - _sections_: This is each section in the column, a list of objects. For example, in the sample JSON the sections are a topper, then two full height BoxThrones. This is done in the order top to bottom. The attributes of each section are:
-  - _name_: The name of the section, to display in the web interface.
-  - _start_: The row that the sections starts at in the column, this is the count of holes in the BoxThrone (including the base). It's every potential location you could put a game.
-  - _end_: The last row of the section.
-  - _ledstrips_: Optional, the strips (poles), that should be included - you can for example highlight the poles on either side of the game that's highlighted.
-  - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
-  - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
+  - _id_: The numeric id of the column.
+  - _name_: The name of the column you want to display in the web interface, I have just used the ID's, but it's designed to be flexible.
+  - _sections_: This is each section in the column, a list of objects. For example, in the sample JSON the sections are a topper, then two full height BoxThrones. This is done in the order top to bottom. The attributes of each section are:
+     - _name_: The name of the section, to display in the web interface.
+     - _start_: The row that the sections starts at in the column, this is the count of holes in the BoxThrone (including the base). It's every potential location you could put a game.
+     - _end_: The last row of the section.
+     - _ledstrips_: Optional, the strips (poles), that should be included - you can for example highlight the poles on either side of the game that's highlighted.
+     - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
+     - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
 
 ## Synchronizing with BGG
 
