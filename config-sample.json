@@ -16,31 +16,34 @@
                     "name": "top",
                     "start": 1,
                     "end": 14,
-                    "ledstrips": [
-                        4
-                    ],
-                    "ledstart": 56,
-                    "ledend": 44
+                    "ledstrips": {
+                        "4": [
+                            56,
+                            44
+                        ]
+                    }
                 },
                 {
                     "name": "middle",
                     "start": 15,
                     "end": 40,
-                    "ledstrips": [
-                        4
-                    ],
-                    "ledstart": 43,
-                    "ledend": 21
+                    "ledstrips": {
+                        "4": [
+                            43,
+                            21
+                        ]
+                    }
                 },
                 {
                     "name": "bottom",
                     "start": 41,
                     "end": 66,
-                    "ledstrips": [
-                        4
-                    ],
-                    "ledstart": 21,
-                    "ledend": 0
+                    "ledstrips": {
+                        "4": [
+                            21,
+                            0
+                        ]
+                    }
                 }
             ]
         },
@@ -52,11 +55,16 @@
                     "name": "column",
                     "start": 1,
                     "end": 66,
-                    "ledstrips": [
-                        4
-                    ],
-                    "ledstart": 57,
-                    "ledend": 0
+                    "ledstrips": {
+                        "4": [
+                            57,
+                            0
+                        ],
+                        "3": [
+                            57,
+                            0
+                        ]
+                    }
                 }
             ]
         },
@@ -100,31 +108,34 @@
                     "name": "top",
                     "start": 1,
                     "end": 14,
-                    "ledstrips": [
-                        0
-                    ],
-                    "ledstart": 58,
-                    "ledend": 46
+                    "ledstrips": {
+                        "0": [
+                            58,
+                            46
+                        ]
+                    }
                 },
                 {
                     "name": "middle",
                     "start": 15,
                     "end": 40,
-                    "ledstrips": [
-                        0
-                    ],
-                    "ledstart": 45,
-                    "ledend": 23
+                    "ledstrips": {
+                        "0": [
+                            45,
+                            23
+                        ]
+                    }
                 },
                 {
                     "name": "bottom",
                     "start": 41,
                     "end": 66,
-                    "ledstrips": [
-                        0
-                    ],
-                    "ledstart": 22,
-                    "ledend": 1
+                    "ledstrips": {
+                        "0": [
+                            22,
+                            1
+                        ]
+                    }
                 }
             ]
         }

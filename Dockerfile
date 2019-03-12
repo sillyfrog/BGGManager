@@ -10,4 +10,5 @@ COPY templates/ /app/templates/
 WORKDIR /app
 
 ENV FLASK_APP=app.py
+ENV PYTHONUNBUFFERED=1
 CMD ["flask", "run", "-h", "0.0.0.0", "-p", "80"]

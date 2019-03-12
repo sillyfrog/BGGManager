@@ -149,31 +149,34 @@ def locate(bggid):
     # Figure out which LED we shuold light up
     section = game["sectionconfig"]
     print(section)
-    if section.get("ledstart") is not None and section.get("ledend") is not None:
-        ledcount = section["ledend"] - section["ledstart"] + 1
-        rowcount = section["end"] - section["start"] + 1
-        ledsperrow = (ledcount - 1) / (rowcount - 1)
-        print(
-            "LED count: {}, row count: {}, per row: {}, gamerow: {}".format(
-                ledcount, rowcount, ledsperrow, game["row"]
-            )
-        )
-        firstled = section["ledstart"] + ledsperrow * (
-            game["row"] - game["rowstaken"] - section["start"] + 1
-        )
-        lastled = section["ledstart"] + ledsperrow * (game["row"] - section["start"])
-        if firstled > lastled:
-            firstled, lastled = lastled, firstled
-        print(
-            "XXX Lighting up LEDs {} to {} on strips {}".format(
-                (firstled), (lastled), section["ledstrips"]
-            )
-        )
-        # Call the configured program with the LED's to light up
+    if "ledstrips" in section:
         leds = []
-        for strip in section["ledstrips"]:
+        for striptxt, ledrange in section["ledstrips"].items():
+            ledstrip = int(striptxt)
+            ledstart, ledend = ledrange
+            ledcount = ledend - ledstart + 1
+            rowcount = section["end"] - section["start"] + 1
+            ledsperrow = (ledcount - 1) / (rowcount - 1)
+            print(
+                "LED count: {}, row count: {}, per row: {}, gamerow: {}".format(
+                    ledcount, rowcount, ledsperrow, game["row"]
+                )
+            )
+            firstled = ledstart + ledsperrow * (
+                game["row"] - game["rowstaken"] - section["start"] + 1
+            )
+            lastled = ledstart + ledsperrow * (game["row"] - section["start"])
+            if firstled > lastled:
+                firstled, lastled = lastled, firstled
+            print(
+                "XXX Lighting up LEDs {} to {} on strip {}".format(
+                    (firstled), (lastled), ledstrip
+                )
+            )
+            # Queue up the LEDS to light up
             for led in range(round(firstled), round(lastled + 1)):
-                leds.append("{},{}".format(strip, led))
+                leds.append("{},{}".format(ledstrip, led))
+        # Call the configured program with the LED's to light up
         cmd = copy.deepcopy(common.CONFIG.get("ledscommand"))
         if cmd:
             cmd += leds

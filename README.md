@@ -4,6 +4,7 @@ Provides an interface to allow searching for games in your Board Game Geek (BGG)
 
 It will sync with BGG, and is designed to be used with https://github.com/sillyfrog/BGGManagerLEDLocator to highlight your desired game.
 
+*Note:* This update includes a breaking change to configuration for the LED strips. See below for the updated format.
 
 # Setup
 
@@ -39,9 +40,9 @@ There is a sample `config.json`, I would suggest starting with this for your env
      - _name_: The name of the section, to display in the web interface.
      - _start_: The row that the sections starts at in the column, this is the count of holes in the BoxThrone (including the base). It's every potential location you could put a game.
      - _end_: The last row of the section.
-     - _ledstrips_: Optional, the strips (poles), that should be included - you can for example highlight the poles on either side of the game that's highlighted.
-     - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
-     - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
+     - _ledstrips_: Optional, an object whose key is the strip ID (pole), this is a string of the integer, and value is a list with 2 elements of _ledstart_ and _ledend_ that should be included - you can for example highlight the poles on either side of the game that's highlighted, so may include more than one strip.
+          - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
+          - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
 
 ## Synchronizing with BGG
 
