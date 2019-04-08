@@ -59,9 +59,15 @@ def extractgamedata(fh, gameinfo):
         else:
             data["rating"] = float(rating.attrib["value"])
         for elem in XML_TEXT_ELEMENTS:
-            data[elem] = game.find(".//{}".format(elem)).text
+            match = game.find(".//{}".format(elem))
+            if match is not None:
+                match = match.text
+            data[elem] = match
         for elem in XML_INT_ELEMENTS:
-            data[elem] = int(game.find(".//{}".format(elem)).attrib["value"])
+            match = game.find(".//{}".format(elem))
+            if match is not None:
+                match = int(match.attrib["value"])
+            data[elem] = match
 
         data["mechanics"] = getallwithid(
             game.findall('.//link[@type="boardgamemechanic"]')
@@ -85,6 +91,8 @@ def extractgamedata(fh, gameinfo):
 
 
 def download(url, path):
+    if url is None:
+        return
     if path.is_file():
         if path.stat().st_size > 10:
             return
@@ -92,10 +100,12 @@ def download(url, path):
     r = requests.get(url)
     fh = path.open("wb")
     fh.write(r.content)
-    fh.close
+    fh.close()
 
 
 def getwithretry(url, params=None):
+    if url is None:
+        return
     for i in range(60):
         r = requests.get(url, params)
         if r.status_code == 200:
@@ -133,6 +143,7 @@ def allgamedata():
 def updategameslist():
     count = 0
     gamedata = {}
+    dbbggids = set(dbconn().all("SELECT bggid FROM games;"))
     latestmod = dbconn().one("SELECT MAX(lastmodified) FROM games;")
     # Strip the timezone so it's the same as the incoming data
     latestmod = latestmod.replace(tzinfo=None)
@@ -140,7 +151,7 @@ def updategameslist():
         latestmod = datetime.datetime.fromtimestamp(0)
     for gameid, status, lastmodified, name in allgamedata():
         fn = pathlib.Path("games/{}.xml".format(gameid))
-        if lastmodified <= latestmod and fn.is_file():
+        if lastmodified <= latestmod and fn.is_file() and gameid in dbbggids:
             continue
         gamedata[gameid] = {
             "status": status,

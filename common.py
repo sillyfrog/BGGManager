@@ -33,16 +33,11 @@ THUMBS_PATH.mkdir(parents=True, exist_ok=True)
 
 class PostgresRetry(postgres.Postgres):
     def doretries(self, func, *args, **kwargs):
-        i = 0
-        while True:
-            try:
-                return func(*args, **kwargs)
-            except psycopg2.InterfaceError as e:
-                i += 1
-                if i < DB_RETRIES:
-                    print("Got error, will retry:", e)
-                else:
-                    raise e
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print("Got error, exiting! {!r} ({})".format(e, e))
+            os._exit(1)
 
     def run(self, *args, **kwargs):
         return self.doretries(super().run, *args, **kwargs)
