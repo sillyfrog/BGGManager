@@ -23,6 +23,38 @@
     var gamestable;
     var DEFAULT_HIDDEN = new Set(["Location", "Max Players", "Minutes", "Complexity", "Last Play", "Group", "Mechanics/Categories"]);
     var FILTER_COL = new Set(['Group', 'Status']);
+    var MAXMIN_COL = new Set(['Max Players', 'Minutes']);
+
+    $.fn.dataTable.ext.search.push(
+      function (settings, data, dataIndex) {
+        var min = parseInt($('#min_MaxPlayers').val(), 10);
+        var max = parseInt($('#max_MaxPlayers').val(), 10);
+        var val = parseFloat(data[6]) || 0;
+
+        return checkFilter(min, max, val);
+      }
+    );
+
+    $.fn.dataTable.ext.search.push(
+      function (settings, data, dataIndex) {
+        var min = parseInt($('#min_Minutes').val(), 10);
+        var max = parseInt($('#max_Minutes').val(), 10);
+        var val = parseFloat(data[7]) || 0;
+
+        return checkFilter(min, max, val);
+      }
+    );
+
+    function checkFilter(min, max, val) {
+      if ((isNaN(min) && isNaN(max)) ||
+        (isNaN(min) && val <= max) ||
+        (min <= val && isNaN(max)) ||
+        (min <= val && val <= max)) {
+        return true;
+      }
+      return false;
+    };
+
     $(document).ready(function () {
       $("#gamestable tbody tr").on("click", function (event) {
         bggid = parseInt(this.attributes['_gameid'].value)
@@ -32,6 +64,9 @@
         paging: false,
         "dom": "<'row'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 hidebuttons' l>>",
         "order": [[1, "asc"]],
+        columnDefs: [
+          { targets: [3, 6, 7], "type": "num" },
+        ]
       });
 
       var buttondiv = $("div.hidebuttons");
@@ -55,7 +90,7 @@
         // Provide a filter dropdown as required
         if (FILTER_COL.has(txt)) {
           $("<br />").appendTo(header);
-          var select = $('<select><option value=""></option></select>')
+          var select = $('<select id="sort_' + txt + '"><option value=""></option></select>')
             .appendTo($(header))
             .on('change', function () {
               var val = $.fn.dataTable.util.escapeRegex(
@@ -64,6 +99,9 @@
               column
                 .search(val ? '^' + val + '$' : '', true, false)
                 .draw();
+            })
+            .on('click', function (event) {
+              event.stopPropagation();
             });
           column.data().unique().sort().each(function (d, j) {
             select.append('<option value="' + d + '">' + d + '</option>')
@@ -95,7 +133,19 @@
             select.append('<option value="' + d + '">' + d + '</option>');
           }
         }
+        if (MAXMIN_COL.has(txt)) {
+          $("<br />").appendTo(header);
+          $('<input id="min_' + txt.replace(' ', '') + '" type="text" style="width: 3em;" placeholder="Min" width="3">')
+            .appendTo(header)
+            .keyup(function () { gamestable.draw(); })
+            .click(function (event) { event.stopPropagation(); });
+          $('<input id="max_' + txt.replace(' ', '') + '" type="text" style="width: 3em;" placeholder="Max" width="3">')
+            .appendTo(header)
+            .keyup(function () { gamestable.draw(); })
+            .click(function (event) { event.stopPropagation(); });
+        }
       });
+      $("#sort_Status").val("Own").trigger("change");
     });
     function toggleVis(e) {
       e.preventDefault();
