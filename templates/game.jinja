@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+{% from 'tools.jinja' import navbar, header %}
 <head>
-    <meta charset="utf-8">
+  {{ header(game.name) }}
     <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
-    <title>{{ game.name }} </title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    
     <script type="text/javascript" src="/static/typeahead.jquery.js"></script>
- 
-    <link rel="stylesheet" href="/static/style.css" />
     <script>
       var bggid = {{ game.bggid }};
     </script>
     <script type="text/javascript" src="/static/game.js?nocache5"></script>
 </head>
 <body onLoad="locategame();updatePlays();">
+  {% from 'tools.jinja' import navbar %}
+  {{ navbar(game.name) }}
   <a name="top"></a>
     <table>
       <tr>
@@ -50,19 +47,6 @@
       <li><b>Board Game Geek ID</b>: <a href="https://boardgamegeek.com/boardgame/{{ game.bggid }}">{{ game.bggid }}</a></li>
     {% endif %}
     </ul>
-    {#
-    XXX Start
-            {% for group in groups %}
-              <button onClick="setgroup({{ group.id }});"> {{ group.name }} </button>
-            {% endfor %}
-            <script>
-            function setgroup(id) {
-              document.getElementById("groupid").value = id;
-              updateinfo();
-            }
-            </script>
-    XXX End
-    #}
     {{ game.description }}
     <p>&nbsp;</p>
     <div id="logplaydiv" class="card mb-4 shadow-sm" style="display:none;">
@@ -99,7 +83,7 @@
     </div>
     <div class="card mb-4 shadow-sm">
       <div class="card-header">
-        <div style="position: fixed; top: 10px; right: 10px;"><button id="logplaybtn" class="btn btn-primary" onClick="logplay();">Log Play</button></div>
+        <div style="position: fixed; top: 65px; right: 10px;"><button id="logplaybtn" class="btn btn-primary" onClick="logplay();">Log Play</button></div>
         <h4 class="my-0 font-weight-normal">Logged Plays</h4>
       </div>
       <div class="card-body">
@@ -150,6 +134,18 @@
         </table>
         <p>
           <button id="updateinfo" onclick="updateinfo();" class="btn btn-primary">Update</button>
+        </p>
+        <p>
+          <a href="/scanbarcode?bggid={{ game.bggid }}" class="btn btn-primary">Associate Barcode</a>
+          {% if game.barcodes %}
+          <br>
+          <b>Associated Bar Codes</b>: 
+          <ul>
+            {% for barcode in game.barcodes%}
+              <li>{{ barcode }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
         </p>
       </div>
     </div>

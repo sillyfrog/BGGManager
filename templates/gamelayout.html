@@ -1,27 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+{% from 'tools.jinja' import navbar, header %}
 
 <head>
-  <meta charset="utf-8">
-  <title>Games Layout</title>
-  <link rel="stylesheet" type="text/css"
-    href="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.css" />
-
-  <link rel="stylesheet" href="/static/style.css" />
+  {{ header("Games Layout") }}
 </head>
 
 <body>
-  <div class="row flex-nowrap justify-content-between align-items-center">
-    <div class="col-4 pt-1">
-      <a class="text-muted" href="/">Home</a>
-    </div>
-    <div class="col-4 text-center">
-      <h1>Games Layout</h1>
-    </div>
-    <div class="col-4 d-flex justify-content-end align-items-center">
-    </div>
-  </div>
-
+  {% from 'tools.jinja' import navbar %}
+  {{ navbar('Games Layout',[('/layout', 'Layout'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')]) }}
   <table>
     <thead>
       <tr>

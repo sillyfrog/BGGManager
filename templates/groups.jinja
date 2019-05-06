@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+{% from 'tools.jinja' import navbar, header %}
 <head>
-    <meta charset="utf-8">
+  {{ header("Groups") }}
     <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
-    <title>Groups</title>
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    
-    <link rel="stylesheet" href="/static/style.css" />
     <script>
       function updateGroups() {
         fetch('/getgroups')
@@ -71,16 +66,7 @@
     <script type="text/javascript" src="/static/game.js"></script>
 </head>
 <body onLoad="updateGroups();">
-  <div class="row flex-nowrap justify-content-between align-items-center">
-    <div class="col-4 pt-1">
-      <a class="text-muted" href="/">All Games</a>
-    </div>
-    <div class="col-4 text-center">
-      <h1>Games Groups</h1>
-    </div>
-    <div class="col-4 d-flex justify-content-end align-items-center">
-    </div>
-  </div>
+  {{ navbar('Groups') }}
   <table class="table table-sm ">
     <thead>
       <th>ID</th>

@@ -6,7 +6,9 @@ import datetime
 import requests
 import json
 
-DIR_BASE = pathlib.Path(os.environ.get("BASEDIR", "."))
+DIR_BASE = pathlib.Path(
+    os.environ.get("BASEDIR", pathlib.Path(__file__).resolve().parent)
+)
 CONFIG = json.load(open(DIR_BASE / "config.json"))
 
 BGG_URL = "https://www.boardgamegeek.com/xmlapi/collection/{}".format(
@@ -26,6 +28,7 @@ DATA_PATH = DIR_BASE / "allgames.xml"
 GAMES_CACHE_PATH = DIR_BASE / "games"
 
 _dbconnection = None
+_dbdirectconnection = None
 
 # Make sure the directories exist at startup, so do not run in a main function
 THUMBS_PATH.mkdir(parents=True, exist_ok=True)
@@ -36,8 +39,11 @@ class PostgresRetry(postgres.Postgres):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            print("Got error, exiting! {!r} ({})".format(e, e))
-            os._exit(1)
+            if self.ignoreerror:
+                print("Ignoring error! {!r} ({})".format(e, e))
+            else:
+                print("Got error, exiting! {!r} ({})".format(e, e))
+                os._exit(1)
 
     def run(self, *args, **kwargs):
         return self.doretries(super().run, *args, **kwargs)
@@ -49,11 +55,18 @@ class PostgresRetry(postgres.Postgres):
         return self.doretries(super().all, *args, **kwargs)
 
 
-def dbconn():
-    global _dbconnection
-    if not _dbconnection:
-        _dbconnection = PostgresRetry(CONFIG["dburl"])
-    return _dbconnection
+def dbconn(ignoreerror=False):
+    global _dbconnection, _dbdirectconnection
+    if ignoreerror:
+        if not _dbdirectconnection:
+            _dbdirectconnection = PostgresRetry(CONFIG["dburl"])
+            _dbdirectconnection.ignoreerror = True
+        return _dbdirectconnection
+    else:
+        if not _dbconnection:
+            _dbconnection = PostgresRetry(CONFIG["dburl"])
+            _dbconnection.ignoreerror = False
+        return _dbconnection
 
 
 STATUS = {"own": "Own", "preordered": "Pre-Ordered", "wishlist": "Wish List"}
@@ -154,7 +167,8 @@ def querygames(
                 ORDER BY text
             ) AS categories,
             e.name AS expansionname,
-            (SELECT MAX(date) FROM plays WHERE g.bggid = plays.gamebggid) AS lastplay
+            (SELECT MAX(date) FROM plays WHERE g.bggid = plays.gamebggid) AS lastplay,
+            ARRAY(SELECT barcode FROM barcodes WHERE barcodes.bggid = g.bggid) as barcodes
             FROM games g 
                 LEFT OUTER JOIN games e ON g.expansionbggid = e.bggid 
                 LEFT OUTER JOIN gamesinfo i ON g.id = i.gamesid
@@ -322,8 +336,8 @@ def updateinfo(bggid=None, gameid=None, col=None, row=None, groupid=None):
                 updateinfo(gameid=expansion.id, groupid=groupid)
 
 
-EXCLUDE_NAMES = set(["", "smurf", "Alienoid"])
-FIRST_NAMES = set(["Hermione", "Pixie", "Smurf"])
+EXCLUDE_NAMES = CONFIG.get("excludednames", []) + [""]
+PRIORITY_NAMES = CONFIG.get("prioritynames", [])
 
 
 def getplayernames():
@@ -337,12 +351,11 @@ def getplayernames():
         """
     )
     names = set(names)
-    names = names - EXCLUDE_NAMES
-    names = names - FIRST_NAMES
+    names = names - set(EXCLUDE_NAMES)
+    names = names - set(PRIORITY_NAMES)
     names = list(names)
     names.sort()
-    firstnames = list(FIRST_NAMES)
-    firstnames.sort()
+    firstnames = PRIORITY_NAMES
     names = firstnames + names
     return names
 

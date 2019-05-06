@@ -7,6 +7,14 @@
         "-H",
         "<mqtt host>"
     ],
+    "excludednames": [
+        "typeinname",
+        "option config"
+    ],
+    "prioritynames": [
+        "Frequent",
+        "Player"
+    ],
     "columns": [
         {
             "id": 1,

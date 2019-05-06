@@ -1,0 +1,41 @@
+{% macro navbar(title, items) -%}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style>
+    <span class="navbar-brand" style="max-width: 50%; text-overflow: ellipsis;overflow: hidden;">{{ title }}</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02"
+      aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <li class="nav-item {% if request.path == '/' %} active {% endif %}">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        <li class="nav-item {% if request.path == '/scanbarcode' %} active {% endif %}">
+          <a class="nav-link" href="/scanbarcode">Put Away</a>
+        </li>
+        {% for item in items %}
+        <li class="nav-item {% if request.path == item[0] %} active {% endif %}">
+          <a class="nav-link" href="{{ item[0] }}">{{ item[1] }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </nav>
+  <div style="height: 0.5em;">&nbsp;</div>
+{%- endmacro %}
+
+{% macro header(title) -%}
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+
+    <link rel="stylesheet" type="text/css"
+      href="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.css" />
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script type="text/javascript"
+      src="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
+
+    <link rel="stylesheet" href="/static/style.css" />
+{%- endmacro %}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+{% from 'tools.jinja' import navbar, header %}
+
+<head>
+  {{ header("Scan Bar Code") }}
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <script>
+    const bggid = {% if bggid %} {{ bggid }} {% else %} undefined {% endif %};
+    const putaway = {% if putaway %} true {% else %} false {% endif %};
+  </script>
+  <style>
+    #shutter {
+      opacity: 0;
+      transition: opacity 50ms ease-in;
+      position: fixed;
+      height: 0%;
+      width: 0%;
+      pointer-events: none;
+      background-color: #ddd;
+    }
+
+    #shutter.on {
+      opacity: 1;
+      height: 100%;
+      width: 100%;
+    }
+
+    #alert {
+      display: none;
+      opacity: 0.95;
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      background-color: #ddd;
+      text-align: center;
+      padding: 10%;
+    }
+
+    #alert.on {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  {{ navbar('Put Away Games') }}
+  <div id="shutter"></div>
+  <div id="alert" onclick="this.classList.remove('on');"></div>
+  <div id="container">
+    <div class="select">
+      <label for="videoSource">Video source:</label> <span id="sourcebuttons"></span></span>
+    </div>
+
+    <video id="video" playsinline autoplay style="padding: 1em; width: 100%; height: auto;"
+      onclick="takeimage();"></video>
+  </div>
+
+  <input id="vid-take" type="button" value="Take Photo" />
+  <br>
+  <div id="vid-canvas"> </div>
+
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="/static/scanbarcode.js?x=14" async></script>
+</body>
+
+</html>

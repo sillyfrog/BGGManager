@@ -33,6 +33,8 @@ There is a sample `config.json`, I would suggest starting with this for your env
 - _username_/_password_: This is your login to BGG to sync all of your games.
 - _dburl_: The URL to connect to the Postgres server, update for what you have configured for your DB.
 - _ledscommand_: this is the command to call when you want to highlight your game - currently all that's included is `homieleds`. The program will be called with each argument in the list, and to the end will be appended the `<col>,<led>` for each LED to highlight.
+- _excludednames_ (optional): a list of names that will be excluded from the Player list when logging players. Useful to exclude names with typo's that may have made it into the DB.
+- _prioritynames_ (optional): names to always be at the top of the Player list when logging plays, in the same order (other names are sorted alphabetically). Ideal for frequent players so you can tap without typing. We list everyone in our household in this list.
 - _columns_: This outlines how each column of games is configure (for example, in your BoxThrone), a list of JSON objects. Each element has the follow attributes:
   - _id_: The numeric id of the column.
   - _name_: The name of the column you want to display in the web interface, I have just used the ID's, but it's designed to be flexible.
@@ -57,3 +59,13 @@ You can also setup a daily cron job on the _host_ (not in the container), to reg
 ## LED's 
 
 To highlight the LED's, see the https://github.com/sillyfrog/BGGManagerLEDLocator project for details.
+
+# Barcode scanning
+
+The latest release includes the (optional) ability to scan barcodes on the boxes to make putting games away much easier. If the `pillow` and `pyzbar` Python modules are installed, you will be able to take a photo of the barcode, and use this as part of the "Put Away" option. Initially you'll need to populate your database with all of your bar codes. On a specific game, right at the bottom there is an _Associate Barcode_ button, clicking on this will take you to the barcode scanning screen. After giving access to the camera on your device (phone or tablet recommended), you can select which camera to use (the rear is recommended, the image should not be mirrored), you can tap the image when you have the barcode lined up. The decoding is done using the [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar) library, so it has the same limitations. Quality is better than size I have found (ie: sometimes it's better to have the image smaller to be sharper).     
+
+Barcode and camera support requires the latest OS and Browser. I have tested with Firefox v66 and on iOS 12 with Safari (it does not work with iOS Firefox at the time of my testing). Additionally, in my reading, webcam access is only provided to HTTPS sites, so it needs to be running behind an HTTPS/SSL gateway (I use my [Magic Reverse Proxy](https://github.com/sillyfrog/magicreverseproxy)).
+
+# Updating
+
+The latest release requires some updates to the DB, and this data will need to be back filled. To do this, change to the updates directory `cd updates` and then run the `./v1-update.py` script.

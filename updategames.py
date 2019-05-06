@@ -135,7 +135,6 @@ def allgamedata():
         lastmodified = datetime.datetime.strptime(
             statusattrib["lastmodified"], "%Y-%m-%d %H:%M:%S"
         )
-        # if thing.attrib["objectid"] == "155426":  # XXX hack for just one record
         ret.append((int(thing.attrib["objectid"]), retstatus, lastmodified, name))
     return ret
 
