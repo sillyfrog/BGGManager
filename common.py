@@ -295,7 +295,7 @@ def thnumber(num):
         secondlastdigit = int(str(num)[-2])
     else:
         secondlastdigit = 0
-    if secondlastdigit is not 1:
+    if secondlastdigit != 1:
         if lastdigit == 1:
             return "st"
         elif lastdigit == 2:

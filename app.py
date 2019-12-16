@@ -218,6 +218,14 @@ def updategroups():
     return "OK"
 
 
+def justint(src):
+    """Returns an int, stripping non-digit trailing characters
+    """
+    while src and not src[-1].isdigit():
+        src = src[:-1]
+    return int(src)
+
+
 @app.route("/locate/<int(signed=True):bggid>")
 def locate(bggid):
     game = common.querygames(bggid=bggid, formatvals=False, extendedlocation=True)
@@ -232,7 +240,7 @@ def locate(bggid):
     if "ledstrips" in section:
         leds = []
         for striptxt, ledrange in section["ledstrips"].items():
-            ledstrip = int(striptxt)
+            ledstrip = justint(striptxt)
             ledstart, ledend = ledrange
             ledcount = ledend - ledstart + 1
             rowcount = section["end"] - section["start"] + 1
