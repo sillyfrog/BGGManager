@@ -36,7 +36,7 @@ There is a sample `config.json`, I would suggest starting with this for your env
 - _excludednames_ (optional): a list of names that will be excluded from the Player list when logging players. Useful to exclude names with typo's that may have made it into the DB.
 - _prioritynames_ (optional): names to always be at the top of the Player list when logging plays, in the same order (other names are sorted alphabetically). Ideal for frequent players so you can tap without typing. We list everyone in our household in this list.
 - _columns_: This outlines how each column of games is configure (for example, in your BoxThrone), a list of JSON objects. Each element has the follow attributes:
-  - _id_: The numeric id of the column.
+  - _id_: The numeric id of the column. Trailing characters (non-digits) maybe included that will be stripped to allow creating what would otherwise be duplicate keys.
   - _name_: The name of the column you want to display in the web interface, I have just used the ID's, but it's designed to be flexible.
   - _sections_: This is each section in the column, a list of objects. For example, in the sample JSON the sections are a topper, then two full height BoxThrones. This is done in the order top to bottom. The attributes of each section are:
      - _name_: The name of the section, to display in the web interface.

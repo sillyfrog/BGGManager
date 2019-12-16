@@ -57,6 +57,7 @@ var videoSource = undefined;
 
 function selectVideo(but) {
     videoSource = this.value;
+    window.localStorage.setItem("camera", this.value);
     start();
 }
 
@@ -65,6 +66,7 @@ function gotDevices(deviceInfos) {
     while (videoButtons.firstChild) {
         videoButtons.removeChild(videoButtons.firstChild);
     }
+    var lastcamera = window.localStorage.getItem("camera");
     for (let i = 0; i !== deviceInfos.length; ++i) {
         const deviceInfo = deviceInfos[i];
         const button = document.createElement('button');
@@ -72,6 +74,10 @@ function gotDevices(deviceInfos) {
         button.classList.add('btn');
         button.classList.add('btn-primary');
         if (deviceInfo.kind === 'videoinput') {
+            if (deviceInfo.deviceId == lastcamera && videoSource != deviceInfo.deviceId) {
+                videoSource = deviceInfo.deviceId;
+                start();
+            }
             var space = document.createElement('span');
             space.innerHTML = "&nbsp;";
             videoButtons.appendChild(space);
