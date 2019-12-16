@@ -149,6 +149,14 @@
       }
     }
   </script>
+  <style>
+    .sprite {
+      width: 60px;
+      height: 60px;
+      background: url({{ ALL_THUMBS }});
+      background-size: {{ spritesize.width }}px {{ spritesize.height }}px;
+    }
+  </style>
 </head>
 
 <body>
@@ -171,7 +179,9 @@
     <tbody style="cursor: pointer;">
       {% for game in games %}
       <tr _gameid="{{ game.bggid }}">
-        <td style="text-align: center;"><img src="{{ game.thumburl }}" onload="this.width/=2;"></td>
+        <td>
+          <div class="sprite" style="background-position: -{{ game.spritex }}px -{{ game.spritey }}px;"></div>
+        </td>
         {# <td><a href="/game/{{ game.bggid }}">{{ game.name }}</a></td> #}
         <td>{{ game.name }}</a></td>
         <td>{{ game.groupname }}</td>

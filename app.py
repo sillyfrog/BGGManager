@@ -6,8 +6,9 @@ import copy
 import threading
 import subprocess
 
+from PIL import Image
+
 try:
-    from PIL import Image
     from pyzbar import pyzbar
 
     BARCODE_SUPPORT = True
@@ -19,7 +20,25 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html", games=common.querygames())
+    try:
+        allthumbs = common.THUMBS_PATH / "allthumbs.jpg"
+        sprite = Image.open(allthumbs)
+        spritesize = {
+            "width": sprite.width / common.SPRITE_SCALE,
+            "height": sprite.height / common.SPRITE_SCALE,
+        }
+        thumbsurl = "{}?{}".format(
+            common.THUMBS_URL.format("allthumbs"), allthumbs.stat().st_mtime
+        )
+    except Exception:
+        spritesize = {}
+        thumbsurl = "nothing"
+    return render_template(
+        "index.html",
+        games=common.querygames(),
+        ALL_THUMBS=thumbsurl,
+        spritesize=spritesize,
+    )
 
 
 @app.route("/favicon.ico")

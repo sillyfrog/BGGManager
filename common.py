@@ -24,6 +24,11 @@ THUMBS_PATH = IMAGES_PATH / "thumbs"
 IMAGES_URL = "/static/images/{}.jpg"
 THUMBS_URL = "/static/images/thumbs/{}.jpg"
 
+MINI_THUMB_SIZE = 60
+SPRITE_WIDTH = 10
+SPRITE_SPACING = 5
+SPRITE_SCALE = 2  # For Retina displays, set to 1 for normal displays
+
 DATA_PATH = DIR_BASE / "allgames.xml"
 GAMES_CACHE_PATH = DIR_BASE / "games"
 
@@ -32,6 +37,17 @@ _dbdirectconnection = None
 
 # Make sure the directories exist at startup, so do not run in a main function
 THUMBS_PATH.mkdir(parents=True, exist_ok=True)
+
+
+def spritecoord(imgid, scale=True):
+    y = imgid // SPRITE_WIDTH
+    x = imgid % SPRITE_WIDTH
+    x = (MINI_THUMB_SIZE + SPRITE_SPACING) * x + SPRITE_SPACING
+    y = (MINI_THUMB_SIZE + SPRITE_SPACING) * y + SPRITE_SPACING
+    if scale:
+        x = x * SPRITE_SCALE
+        y = y * SPRITE_SCALE
+    return x, y
 
 
 class PostgresRetry(postgres.Postgres):
@@ -43,6 +59,9 @@ class PostgresRetry(postgres.Postgres):
                 print("Ignoring error! {!r} ({})".format(e, e))
             else:
                 print("Got error, exiting! {!r} ({})".format(e, e))
+                import traceback
+
+                traceback.print_exc()
                 os._exit(1)
 
     def run(self, *args, **kwargs):
@@ -121,6 +140,10 @@ def formatgamevals(game):
         game["rowcoltxt"] = "none"
     while game["description"].endswith("<br />"):
         game["description"] = game["description"][:-6]
+    if game["imgid"]:
+        x, y = spritecoord(game["imgid"], False)
+        game["spritex"] = x
+        game["spritey"] = y
     # if "&" in game["description"]:
     #    print("Found &:", game)
     return game

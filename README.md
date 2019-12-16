@@ -14,7 +14,7 @@ This has been designed to run in Docker, however it should be OK outside Docker,
 - MQTT/Mosquito server (if using RGB LEDs)
 - Reverse proxy if running outside the local network (I use this https://github.com/sillyfrog/magicreverseproxy )
 
-The "build-run-image.sh" shows an example of how to build and run the Docker image. Update the paths for your environment. The "/app/static/images/" and "/app/games/" volumes start empty, and are populated when run. This is a cache, but to prevent hammering BGG, please ensure this is not a persistent volume.
+The "build-run-image.sh" shows an example of how to build and run the Docker image. Update the paths for your environment. The "/app/static/images/" and "/app/games/" volumes start empty, and are populated when run. This is a cache, but to prevent hammering BGG, please ensure this is on a persistent volume of some kind.
 
 ## Postgres
 
