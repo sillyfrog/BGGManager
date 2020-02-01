@@ -8,12 +8,14 @@
 
 <body>
   {% from 'tools.jinja' import navbar %}
-  {{ navbar('Games Layout',[('/layout', 'Layout'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')]) }}
+  {{ navbar('Games Layout',[('/layout', 'Layout'), ('/layout/usedshelves', 'Used Shelves'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')]) }}
+  <p>{{ about }}</p>
   <table>
+
     <thead>
       <tr>
-        {% for col in games %}
-        <th>{{ col['name'] }}</th>
+        {% for col in columns %}
+        <th>{{ col }}</th>
         {% endfor %}
       </tr>
     </thead>
@@ -21,6 +23,7 @@
       {{ html|safe }}
     </tbody>
   </table>
+  <p></p>
 </body>
 
 </html>

@@ -47,7 +47,9 @@ def favicon():
 
 
 @app.route("/layout")
+@app.route("/layout/usedshelves")
 def gamelayout():
+    usedshelves = request.path.endswith("/usedshelves")
     games = common.querygames(extendedlocation=True)
     # Generates a grid of each section, and what's in each section
     # List of columns, each column has a section, and each section has rows
@@ -57,15 +59,18 @@ def gamelayout():
     table = copy.deepcopy(common.CONFIG["columns"])
 
     columns = []
+    columnstext = []
     # Format for our purposes
     for col in table:
         columns.append(col["id"])
+        columnstext.append(col["name"])
         for section in col.get("sections", []):
             section["height"] = abs(section.get("start", 0) - section.get("end", 0)) + 1
             section["games"] = {}
 
     layout = {}
-    maxrows = 1
+    maxrow = 1
+    minrow = None
     for game in games:
         if game["row"] is not None and game["col"] is not None:
             for col in table:
@@ -75,46 +80,102 @@ def gamelayout():
             shelf = layout.get((game["col"], game["rowtop"]), [])
             shelf.append(game)
             layout[(game["col"], game["rowtop"])] = shelf
-            if game["row"] > maxrows:
-                maxrows = game["row"]
-            # for section in col["sections"]:
-            #    if game["row"] >= section["start"] and game["row"] <= section["end"]:
-            #        sectiongames = section["games"]
-            #        rowgames = sectiongames.get(game["row"], [])
-            #        rowgames.append(game)
-            #        sectiongames[game["row"]] = rowgames
+            if game["row"] > maxrow:
+                maxrow = game["row"]
+            if minrow is None or game["row"] < minrow:
+                minrow = game["row"]
 
-    # from pprint import pprint
-    # pprint(table)
+    # Check every column has at least one game and goes from top to bottom
+    # if not, insert blank game as required
+    for col in columns:
+        coltop = None
+        colbottom = None
+        for row in range(minrow, maxrow + 1, 1):
+            shelf = layout.get((col, row))
+            if not shelf:
+                continue
+            if coltop is None:
+                coltop = shelf[0]["rowtop"]
+            colbottom = shelf[0]["row"]
+        if coltop is None:
+            # Entire column is empty, so insert a full column
+            layout[(col, minrow)] = [
+                {
+                    "rowstaken": maxrow,
+                    "bggid": None,
+                    "thumburl": None,
+                    "topofsection": True,
+                    "bottomofsection": True,
+                }
+            ]
+        else:
+            if coltop > minrow:
+                layout[(col, minrow)] = [
+                    {
+                        "rowstaken": minrow - coltop,
+                        "bggid": None,
+                        "thumburl": None,
+                        "topofsection": True,
+                        "bottomofsection": True,
+                    }
+                ]
+            if colbottom < maxrow:
+                layout[(col, colbottom + 1)] = [
+                    {
+                        "rowstaken": maxrow - colbottom,
+                        "bggid": None,
+                        "thumburl": None,
+                        "topofsection": True,
+                        "bottomofsection": True,
+                    }
+                ]
+
     tbodyhtml = []
-    for row in range(maxrows):
+    for row in range(minrow, maxrow + 1, 1):
         rowhtml = "<tr>"
         for col in columns:
             shelf = layout.get((col, row))
             if shelf:
-                print(shelf)
+                print("Shelf:", shelf)
                 style = "border: 2px solid black;"
                 if not shelf[0].get("topofsection"):
-                    style += "border-top: none;"
+                    style += "border-top: 1px solid #ddd;"
                 if not shelf[0].get("bottomofsection"):
-                    style += "border-bottom: none;"
+                    style += "border-bottom: 1px solid #ddd;"
                 if shelf[0]["rowstaken"] > 1:
                     span = "rowspan={}".format(shelf[0]["rowstaken"])
                 else:
                     span = ""
                 shelfhtml = ""
                 for game in shelf:
-                    shelfhtml += '<a href="/game/{}"><img src="{}"></a>'.format(
-                        game["bggid"], game["thumburl"]
-                    )
+                    if game["bggid"] is None:
+                        shelfhtml += "&nbsp;"
+                    else:
+                        if usedshelves:
+                            shelfhtml += "<h3>{}</h3>".format(game["row"])
+                            break
+                        else:
+                            shelfhtml += '<a href="/game/{}"><img src="{}"></a>'.format(
+                                game["bggid"], game["thumburl"]
+                            )
 
                 rowhtml += '<td style="{}" {}>{}</td>'.format(style, span, shelfhtml)
         rowhtml += "</tr>"
         tbodyhtml.append(rowhtml)
     html = "\n".join(tbodyhtml)
 
+    if usedshelves:
+        about = "Shows which shelves are used, ideal when setting up your BoxThrone " "(eg: after moving house), so you know which shelves to fill."
+    else:
+        about = "Shows the order and layout (using game images) of all of the games " "that have a location on the shelves."
+
     return render_template(
-        "gamelayout.html", games=table, columns=columns, html=html, layout=layout
+        "gamelayout.html",
+        games=table,
+        columns=columnstext,
+        html=html,
+        layout=layout,
+        about=about,
     )
 
 
