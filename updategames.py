@@ -150,12 +150,12 @@ def updategameslist():
     gamedata = {}
     dbbggids = set(dbconn().all("SELECT bggid FROM games;"))
     latestmod = dbconn().one("SELECT MAX(lastmodified) FROM games;")
-    # Strip the timezone so it's the same as the incoming data
-    latestmod = latestmod.replace(tzinfo=None)
     if not latestmod:
         latestmod = datetime.datetime.fromtimestamp(0)
+    # Strip the timezone so it's the same as the incoming data
+    latestmod = latestmod.replace(tzinfo=None)
     for gameid, status, lastmodified, name in allgamedata():
-        fn = pathlib.Path("games/{}.xml".format(gameid))
+        fn = GAMES_CACHE_PATH / "{}.xml".format(gameid)
         if lastmodified <= latestmod and fn.is_file() and gameid in dbbggids:
             continue
         gamedata[gameid] = {
@@ -264,6 +264,9 @@ def latestplays():
 
 def generatesprites():
     maximgs = dbconn().one("SELECT MAX(imgid) FROM games;")
+    if not maximgs:
+        # There are no images, exit
+        return
     games = dbconn().all(
         "SELECT bggid, imgid FROM games WHERE imgid > 0 ORDER BY imgid;"
     )

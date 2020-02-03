@@ -1,0 +1,12 @@
+#!/usr/local/bin/python
+
+import os
+import time
+
+os.system("./upgradedb.py")
+
+while 1:
+    print("Running flask, press Ctrl+C to force a restart")
+    print("press Ctrl+c twice quickly to exit")
+    os.system('flask run -h "0.0.0.0"')
+    time.sleep(3)

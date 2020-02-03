@@ -1,0 +1,29 @@
+version: '3.3'
+services:
+  games:
+    image: localhost:5000/games
+    restart: on-failure
+    build:
+      context: ../
+    volumes:
+      - ../:/workspace/
+      # This lets you avoid setting up Git again in the container
+      - ~/.gitconfig:/root/.gitconfig
+      - ~/.config/:/root/.config
+    command:
+      ["sleep", "infinity"]
+    environment:
+      - BASEDIR=/workspace/.devcontainer/
+      - FLASK_APP=app.py
+      - FLASK_DEBUG=1
+  
+  postgres:
+    image: postgres
+    restart: on-failure
+    volumes:
+      - "~/docker/bggmanager/postgres-data:/var/lib/postgresql/data"
+      - "~/docker/bggmanager/postgres-root:/root"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=games

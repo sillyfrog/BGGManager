@@ -1,0 +1,151 @@
+{
+    "username": "<bggusername>",
+    "password": "<bggpassword>",
+    "dburl": "postgres://user:pass@postgres/games",
+    "ledscommand": [
+        "./homieleds",
+        "-H",
+        "fakehost"
+    ],
+    "excludednames": [
+        "typeinname",
+        "option config"
+    ],
+    "prioritynames": [
+        "Frequent",
+        "Player"
+    ],
+    "columns": [
+        {
+            "id": 1,
+            "name": "1",
+            "sections": [
+                {
+                    "name": "top",
+                    "start": 1,
+                    "end": 14,
+                    "ledstrips": {
+                        "4": [
+                            56,
+                            44
+                        ]
+                    }
+                },
+                {
+                    "name": "middle",
+                    "start": 15,
+                    "end": 40,
+                    "ledstrips": {
+                        "4": [
+                            43,
+                            21
+                        ]
+                    }
+                },
+                {
+                    "name": "bottom",
+                    "start": 41,
+                    "end": 66,
+                    "ledstrips": {
+                        "4": [
+                            21,
+                            0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "2",
+            "sections": [
+                {
+                    "name": "column",
+                    "start": 1,
+                    "end": 66,
+                    "ledstrips": {
+                        "4": [
+                            57,
+                            0
+                        ],
+                        "3": [
+                            57,
+                            0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "3",
+            "sections": [
+                {
+                    "name": "top",
+                    "start": 1,
+                    "end": 14
+                },
+                {
+                    "name": "middle",
+                    "start": 15,
+                    "end": 40
+                },
+                {
+                    "name": "bottom",
+                    "start": 41,
+                    "end": 66
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "4",
+            "sections": [
+                {
+                    "name": "column",
+                    "start": 1,
+                    "end": 66
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "5",
+            "sections": [
+                {
+                    "name": "top",
+                    "start": 1,
+                    "end": 14,
+                    "ledstrips": {
+                        "0": [
+                            58,
+                            46
+                        ]
+                    }
+                },
+                {
+                    "name": "middle",
+                    "start": 15,
+                    "end": 40,
+                    "ledstrips": {
+                        "0": [
+                            45,
+                            23
+                        ]
+                    }
+                },
+                {
+                    "name": "bottom",
+                    "start": 41,
+                    "end": 66,
+                    "ledstrips": {
+                        "0": [
+                            22,
+                            1
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -37,6 +37,7 @@ _dbdirectconnection = None
 
 # Make sure the directories exist at startup, so do not run in a main function
 THUMBS_PATH.mkdir(parents=True, exist_ok=True)
+GAMES_CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
 
 def spritecoord(imgid, scale=True):

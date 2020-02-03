@@ -1,4 +1,4 @@
-CREATE TABLE games
+CREATE TABLE IF NOT EXISTS games
 (
     id SERIAL UNIQUE,
     bggid BIGINT UNIQUE,
@@ -16,13 +16,13 @@ CREATE TABLE games
     lastmodified TIMESTAMPTZ
 );
 
-CREATE TABLE groups
+CREATE TABLE IF NOT EXISTS groups
 (
     id SERIAL UNIQUE,
     name text
 );
 
-CREATE TABLE gamesinfo
+CREATE TABLE IF NOT EXISTS gamesinfo
 (
     gamesid INT UNIQUE NOT NULL REFERENCES games(id),
     row INT,
@@ -30,9 +30,9 @@ CREATE TABLE gamesinfo
     groupid INT REFERENCES groups(id)
 );
 
-DROP TABLE players;
-DROP TABLE plays;
-CREATE TABLE plays
+DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS plays;
+CREATE TABLE IF NOT EXISTS plays
 (
     id SERIAL UNIQUE,
     bggid BIGINT UNIQUE,
@@ -44,7 +44,7 @@ CREATE TABLE plays
 CREATE INDEX ON plays
 (gamebggid);
 
-CREATE TABLE players
+CREATE TABLE IF NOT EXISTS players
 (
     id SERIAL UNIQUE,
     playsid INT REFERENCES plays(id),
@@ -59,7 +59,7 @@ CREATE TABLE players
 CREATE INDEX ON players
 (playsid);
 
-CREATE TABLE state
+CREATE TABLE IF NOT EXISTS state
 (
     id SERIAL UNIQUE,
     item TEXT UNIQUE,
@@ -67,14 +67,14 @@ CREATE TABLE state
 );
 
 
-CREATE TABLE categories
+CREATE TABLE IF NOT EXISTS categories
 (
     id SERIAL UNIQUE,
     bggcategoryid BIGINT UNIQUE,
     text TEXT
 );
 
-CREATE TABLE gamecategory
+CREATE TABLE IF NOT EXISTS gamecategory
 (
     id SERIAL UNIQUE,
     gameid BIGINT REFERENCES games(id),
@@ -84,14 +84,14 @@ CREATE TABLE gamecategory
 CREATE INDEX ON gamecategory
 (gameid);
 
-CREATE TABLE mechanics
+CREATE TABLE IF NOT EXISTS mechanics
 (
     id SERIAL UNIQUE,
     bggmechanicid BIGINT UNIQUE,
     text TEXT
 );
 
-CREATE TABLE gamemechanic
+CREATE TABLE IF NOT EXISTS gamemechanic
 (
     id SERIAL UNIQUE,
     gameid BIGINT REFERENCES games(id),

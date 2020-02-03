@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-import sys
-
 from common import dbconn
 import common
+import postgres
+
+
+def initialtablesetup():
+    try:
+        c = postgres.Postgres(common.CONFIG["dburl"])
+        c.run(open("setup.sql").read())
+    except Exception as e:
+        print("Error running initial DB setup!", e)
+        print("Verify the script is running in the same directory as setup.sql")
+        print("If the DB is already created, this can be ignored")
 
 
 def main():
