@@ -48,7 +48,7 @@
       });
       gamestable = $('#gamestable').DataTable({
         paging: false,
-        "dom": "<'row'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 hidebuttons' l>>",
+        "dom": "<'row'<'col'f><'col hidebuttons' l>>",
         "order": [[1, "asc"]],
         columnDefs: [
           { targets: [3, 6, 7], "type": "num" },
@@ -155,6 +155,9 @@
       height: 60px;
       background: url({{ ALL_THUMBS }});
       background-size: {{ spritesize.width }}px {{ spritesize.height }}px;
+    }
+    div.dataTables_filter {
+      text-align: left !important;
     }
   </style>
 </head>

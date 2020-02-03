@@ -2,7 +2,6 @@
 
 import xml.etree.ElementTree
 import requests
-import pathlib
 import time
 import sys
 import datetime
@@ -13,7 +12,8 @@ from common import (
     dbconn,
     IMAGES_PATH,
     THUMBS_PATH,
-    BGG_URL,
+    COLLECTION_URL,
+    THING_URL,
     DATA_PATH,
     GAMES_CACHE_PATH,
     MINI_THUMB_SIZE,
@@ -22,6 +22,17 @@ from common import (
     SPRITE_SCALE,
 )
 import common
+
+# Types to extract info for
+# boardgameexpansion is excluded as it is included with the boardgame type
+INCLUDED_TYPES = [
+    "boardgame",
+    # "boardgameexpansion",
+    # "boardgameaccessory",
+    "rpgitem",
+    # "rpgissue",
+    # "videogame",
+]
 
 logfh = None
 
@@ -121,8 +132,20 @@ def getwithretry(url, params=None):
     raise Exception("Didn't get back a valid answer for: {}".format(url))
 
 
-def allgamedata():
-    data = getwithretry(BGG_URL)
+def fullcollection():
+    ret = []
+    for colltype in INCLUDED_TYPES:
+        ret += typecollection(colltype)
+    return ret
+
+
+def typecollection(collectiontype):
+    args = {
+        "username": common.CONFIG["username"],
+        "subtype": collectiontype,
+        "brief": "1",
+    }
+    data = getwithretry(COLLECTION_URL, args)
     fh = DATA_PATH.open("w")
     fh.write(data)
     fh.close
@@ -154,7 +177,7 @@ def updategameslist():
         latestmod = datetime.datetime.fromtimestamp(0)
     # Strip the timezone so it's the same as the incoming data
     latestmod = latestmod.replace(tzinfo=None)
-    for gameid, status, lastmodified, name in allgamedata():
+    for gameid, status, lastmodified, name in fullcollection():
         fn = GAMES_CACHE_PATH / "{}.xml".format(gameid)
         if lastmodified <= latestmod and fn.is_file() and gameid in dbbggids:
             continue
@@ -165,9 +188,7 @@ def updategameslist():
         }
         count += 1
         log("Game count: {}, Getting id: {}".format(count, gameid))
-        text = getwithretry(
-            "https://www.boardgamegeek.com/xmlapi2/thing?id={}&stats=1".format(gameid)
-        )
+        text = getwithretry(THING_URL, {"id": gameid, "stats": "1"})
         fh = fn.open("w")
         fh.write(text)
         fh.close()

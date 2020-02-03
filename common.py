@@ -11,10 +11,10 @@ DIR_BASE = pathlib.Path(
 )
 CONFIG = json.load(open(DIR_BASE / "config.json"))
 
-BGG_URL = "https://www.boardgamegeek.com/xmlapi/collection/{}".format(
-    CONFIG["username"]
-)
-PLAYS_URL = "https://www.boardgamegeek.com/xmlapi2/plays"
+BGG_XML_URL = "https://www.boardgamegeek.com/xmlapi2/"
+COLLECTION_URL = BGG_XML_URL + "collection"
+PLAYS_URL = BGG_XML_URL + "plays"
+THING_URL = BGG_XML_URL + "thing"
 
 DB_RETRIES = CONFIG.get("db_retries", 3)
 
@@ -48,6 +48,7 @@ def spritecoord(imgid, scale=True):
     if scale:
         x = x * SPRITE_SCALE
         y = y * SPRITE_SCALE
+    print(imgid, x, y, scale)
     return x, y
 
 

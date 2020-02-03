@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, Response, jsonify
-from werkzeug.routing import IntegerConverter
+from flask import Flask, render_template, request, Response, jsonify
 import json
 import common
 import copy
@@ -12,10 +11,10 @@ try:
     from pyzbar import pyzbar
 
     BARCODE_SUPPORT = True
-except:
+except Exception:
     BARCODE_SUPPORT = False
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=str(common.DIR_BASE / "static"))
 
 
 @app.route("/")
@@ -34,7 +33,7 @@ def index():
         spritesize = {}
         thumbsurl = "nothing"
     return render_template(
-        "index.html",
+        "index.jinja",
         games=common.querygames(),
         ALL_THUMBS=thumbsurl,
         spritesize=spritesize,
@@ -165,9 +164,15 @@ def gamelayout():
     html = "\n".join(tbodyhtml)
 
     if usedshelves:
-        about = "Shows which shelves are used, ideal when setting up your BoxThrone " "(eg: after moving house), so you know which shelves to fill."
+        about = (
+            "Shows which shelves are used, ideal when setting up your BoxThrone "
+            "(eg: after moving house), so you know which shelves to fill."
+        )
     else:
-        about = "Shows the order and layout (using game images) of all of the games " "that have a location on the shelves."
+        about = (
+            "Shows the order and layout (using game images) of all of the games "
+            "that have a location on the shelves."
+        )
 
     return render_template(
         "gamelayout.html",
@@ -335,7 +340,7 @@ def locate(bggid):
 def intifval(v):
     try:
         return int(v)
-    except:
+    except Exception:
         return None
 
 
@@ -379,4 +384,3 @@ def sync():
             yield l
 
     return Response(stream_template("syncgames.html", loglines=dummystream()))
-
