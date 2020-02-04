@@ -48,7 +48,6 @@ def spritecoord(imgid, scale=True):
     if scale:
         x = x * SPRITE_SCALE
         y = y * SPRITE_SCALE
-    print(imgid, x, y, scale)
     return x, y
 
 
