@@ -300,6 +300,9 @@ def generatesprites():
             img = Image.open(THUMBS_PATH / "{}.jpg".format(game.bggid))
         except Exception:
             continue
+        if img.mode == "P":
+            # Palette images with Transparency to prevent warning
+            img = img.convert("RGBA")
         img.thumbnail((MINI_THUMB_SIZE * SPRITE_SCALE, MINI_THUMB_SIZE * SPRITE_SCALE))
         x, y = common.spritecoord(game.imgid, True)
         x += (MINI_THUMB_SIZE * SPRITE_SCALE - img.width) // 2
