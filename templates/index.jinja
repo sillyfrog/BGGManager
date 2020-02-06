@@ -156,14 +156,11 @@
       background: url({{ ALL_THUMBS }});
       background-size: {{ spritesize.width }}px {{ spritesize.height }}px;
     }
-    div.dataTables_filter {
-      text-align: left !important;
-    }
   </style>
 </head>
 
 <body>
-  {{ navbar('All Games', [('/layout', 'Layout'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')]) }}
+  {{ navbar('All Games') }}
   <table id="gamestable" class="table table-hover" style="width:98%">
     <thead>
       <tr>

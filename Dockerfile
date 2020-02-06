@@ -1,7 +1,7 @@
 FROM python:3
 
-RUN apt update && \
-    apt install -y libzbar0
+RUN apt-get update && \
+    apt-get install -y libzbar0
 
 RUN pip install --upgrade pip && \
     pip install flask postgres requests paho-mqtt pillow pyzbar

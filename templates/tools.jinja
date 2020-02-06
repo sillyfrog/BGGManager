@@ -19,6 +19,17 @@
           <a class="nav-link" href="{{ item[0] }}">{{ item[1] }}</a>
         </li>
         {% endfor %}
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          More
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% for item in [('/customgame/0', 'New Custom Game'), ('/layout', 'Layout'), ('/layout/usedshelves', 'Used Shelves'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')] %}
+              <a class="dropdown-item {% if request.path == item[0] %} active {% endif %}" href="{{ item[0] }}">{{ item[1] }}</a>
+            {% endfor %}
+          </div>
+        </li>
       </ul>
     </div>
   </nav>
@@ -38,4 +49,10 @@
       src="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
 
     <link rel="stylesheet" href="/static/style.css" />
+{%- endmacro %}
+
+{% macro footer() -%}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 {%- endmacro %}

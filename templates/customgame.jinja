@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+{% from 'tools.jinja' import navbar, header, footer %}
+
+<head>
+  {{ header("Custom Game") }}
+  <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
+  <script type="text/javascript">
+  function confirmDelete() {
+    return confirm("Are you sure you want to delete this game?");
+  }
+  </script>
+</head>
+
+<body>
+  {{ navbar('Custom Game') }}
+  <div class="row">
+    <div class="col">
+      <form method="post" enctype="multipart/form-data">
+        <div class="container">
+          <div class="form-group">
+            <label for="gameName">Game Name</label>
+            <input type="text" class="form-control form-control-lg" id="gameName" placeholder="Game Name" required value="{{ game.name }}" name="name">
+          </div>
+          <div class="form-group">
+            <label for="gameDescription">Description (HTML)</label>
+            <textarea class="form-control" id="gameDescription" rows="5" required name="description">{{ game.description }}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="gameStatus">Status</label>
+            <input type="text" class="form-control" id="gameStatus" placeholder='e.g. "own"' required value="{{ game.status }}" name="status">
+          </div>
+          <div class="form-group">
+            <label for="gameImage">Game Image</label>
+            <div class="custom-file">
+              <label class="" for="gameImage">Choose new image file</label>
+              <input type="file" class="form-control" id="gameImage" name="image">
+              <small class="form-text text-muted">Recommended dimensions around 150-200px on the long side.</small>
+            </div>
+            <img style="padding: 15px;" src="{{ game.imageurl }}?{{ time }}">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="submit" class="btn btn-primary" name="delete" value="delete" onclick="return confirmDelete();">Delete</button>
+      </form>
+    </div>
+  </div>
+  </div>
+</body>
+</html>

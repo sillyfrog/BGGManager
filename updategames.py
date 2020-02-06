@@ -5,21 +5,16 @@ import requests
 import time
 import sys
 import datetime
-import math
-from PIL import Image
 
 from common import (
     dbconn,
+    generatesprites,
     IMAGES_PATH,
     THUMBS_PATH,
     COLLECTION_URL,
     THING_URL,
     DATA_PATH,
     GAMES_CACHE_PATH,
-    MINI_THUMB_SIZE,
-    SPRITE_WIDTH,
-    SPRITE_SPACING,
-    SPRITE_SCALE,
 )
 import common
 
@@ -281,34 +276,6 @@ def latestplays():
         page += 1
     common.setstate("latestplaydownload", datetime.datetime.now().isoformat())
     return ret
-
-
-def generatesprites():
-    maximgs = dbconn().one("SELECT MAX(imgid) FROM games;")
-    if not maximgs:
-        # There are no images, exit
-        return
-    games = dbconn().all(
-        "SELECT bggid, imgid FROM games WHERE imgid > 0 ORDER BY imgid;"
-    )
-    height = math.ceil(maximgs / SPRITE_WIDTH)
-    height = (SPRITE_SPACING + MINI_THUMB_SIZE) * height + SPRITE_SPACING
-    width = (SPRITE_SPACING + MINI_THUMB_SIZE) * SPRITE_WIDTH + SPRITE_SPACING
-    sprite = Image.new("RGB", (width * SPRITE_SCALE, height * SPRITE_SCALE), "white")
-    for game in games:
-        try:
-            img = Image.open(THUMBS_PATH / "{}.jpg".format(game.bggid))
-        except Exception:
-            continue
-        if img.mode == "P":
-            # Palette images with Transparency to prevent warning
-            img = img.convert("RGBA")
-        img.thumbnail((MINI_THUMB_SIZE * SPRITE_SCALE, MINI_THUMB_SIZE * SPRITE_SCALE))
-        x, y = common.spritecoord(game.imgid, True)
-        x += (MINI_THUMB_SIZE * SPRITE_SCALE - img.width) // 2
-        y += (MINI_THUMB_SIZE * SPRITE_SCALE - img.height) // 2
-        sprite.paste(img, (x, y))
-    sprite.save(THUMBS_PATH / "allthumbs.jpg")
 
 
 GAME_UPDATE_COLS = [

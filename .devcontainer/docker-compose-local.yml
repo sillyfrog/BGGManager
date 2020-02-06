@@ -13,7 +13,8 @@ services:
     command:
       ["sleep", "infinity"]
     environment:
-      - BASEDIR=/workspace/.devcontainer/
+      - BASEDIR=/workspace/
+      - CONFIG=/workspace/.devcontainer/config.json
       - FLASK_APP=app.py
       - FLASK_DEBUG=1
   

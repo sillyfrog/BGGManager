@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS plays
     comments TEXT
 );
 
-CREATE INDEX ON plays
+CREATE INDEX IF NOT EXISTS plays_gamebggid_idx ON plays
 (gamebggid);
 
 CREATE TABLE IF NOT EXISTS players
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS players
     UNIQUE (playsid, name)
 );
 
-CREATE INDEX ON players
+CREATE INDEX IF NOT EXISTS players_playsid_idx ON players
 (playsid);
 
 CREATE TABLE IF NOT EXISTS state
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS gamecategory
     bggcategoryid BIGINT REFERENCES categories(bggcategoryid),
     UNIQUE (gameid, bggcategoryid)
 );
-CREATE INDEX ON gamecategory
+CREATE INDEX IF NOT EXISTS gamecategory_gameid_idx ON gamecategory
 (gameid);
 
 CREATE TABLE IF NOT EXISTS mechanics
@@ -98,5 +98,5 @@ CREATE TABLE IF NOT EXISTS gamemechanic
     bggmechanicid BIGINT REFERENCES mechanics(bggmechanicid),
     UNIQUE (gameid, bggmechanicid)
 );
-CREATE INDEX ON gamemechanic
+CREATE INDEX IF NOT EXISTS gamemechanic_gameid_idx ON gamemechanic
 (gameid);

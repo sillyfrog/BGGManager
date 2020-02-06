@@ -11,4 +11,4 @@ while 1:
     os.system('flask run -h "0.0.0.0"')
     print()
     print("Press Ctrl+C quickly to exit. Restarting flask...")
-    time.sleep(3)
+    time.sleep(2)

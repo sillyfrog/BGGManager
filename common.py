@@ -5,11 +5,15 @@ import psycopg2
 import datetime
 import requests
 import json
+import math
+from PIL import Image
+
 
 DIR_BASE = pathlib.Path(
     os.environ.get("BASEDIR", pathlib.Path(__file__).resolve().parent)
 )
-CONFIG = json.load(open(DIR_BASE / "config.json"))
+CONFIG_PATH = os.environ.get("CONFIG", DIR_BASE / "config.json")
+CONFIG = json.load(open(CONFIG_PATH))
 
 BGG_XML_URL = "https://www.boardgamegeek.com/xmlapi2/"
 COLLECTION_URL = BGG_XML_URL + "collection"
@@ -116,10 +120,45 @@ KEYS_TXT = {
 }
 
 
+def generatesprites():
+    maximgs = dbconn().one("SELECT MAX(imgid) FROM games;")
+    if not maximgs:
+        # There are no images, exit
+        return
+    games = dbconn().all(
+        "SELECT bggid, imgid FROM games WHERE imgid > 0 ORDER BY imgid;"
+    )
+    height = math.ceil(maximgs / SPRITE_WIDTH)
+    height = (SPRITE_SPACING + MINI_THUMB_SIZE) * height + SPRITE_SPACING
+    width = (SPRITE_SPACING + MINI_THUMB_SIZE) * SPRITE_WIDTH + SPRITE_SPACING
+    sprite = Image.new("RGB", (width * SPRITE_SCALE, height * SPRITE_SCALE), "white")
+    for game in games:
+        try:
+            img = Image.open(THUMBS_PATH / "{}.jpg".format(game.bggid))
+        except Exception:
+            continue
+        if img.mode == "P":
+            # Palette images with Transparency to prevent warning
+            img = img.convert("RGBA")
+        img.thumbnail((MINI_THUMB_SIZE * SPRITE_SCALE, MINI_THUMB_SIZE * SPRITE_SCALE))
+        x, y = spritecoord(game.imgid, True)
+        x += (MINI_THUMB_SIZE * SPRITE_SCALE - img.width) // 2
+        y += (MINI_THUMB_SIZE * SPRITE_SCALE - img.height) // 2
+        sprite.paste(img, (x, y))
+    sprite.save(THUMBS_PATH / "allthumbs.jpg")
+
+
+def formatfloat(val):
+    if val is None:
+        return "0.0"
+    else:
+        return "{0:.1f}".format(val)
+
+
 def formatgamevals(game):
     game["statustxt"] = STATUS.get(game["status"], game["status"])
-    game["ratingtxt"] = "{0:.1f}".format(game["rating"])
-    game["complexitytxt"] = "{0:.1f}".format(game["complexity"])
+    game["ratingtxt"] = formatfloat(game["rating"])
+    game["complexitytxt"] = formatfloat(game["complexity"])
     game["playingtimetxt"] = "{} mins".format(game["playingtime"])
     if game["lastplay"]:
         game["lastplaytxt"] = isodate(game["lastplay"])
@@ -130,7 +169,7 @@ def formatgamevals(game):
     if "mechanics" in game:
         game["mechanicstxt"] = ", ".join(game["mechanics"])
         game["categoriestxt"] = ", ".join(game["categories"])
-    game["description"] = game["description"].replace("&#10;", "<br />")
+    game["description"] = str(game["description"]).replace("&#10;", "<br />")
     game["rowtxt"] = str(game["row"])
     column = getcolumnbyid(game["col"])
     if column is not None:

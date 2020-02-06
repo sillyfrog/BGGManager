@@ -19,7 +19,7 @@ def main():
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS image_h smallint;")
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS thumb_w smallint;")
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS thumb_h smallint;")
-    dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS imgid integer UNIQUE;")
+    dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS imgid integer;")
     dbconn().run(
         """
         CREATE TABLE IF NOT EXISTS barcodes
@@ -39,11 +39,10 @@ def main():
     )
 
     dbconn().run("UPDATE games SET imgid = next_imgid() WHERE imgid IS NULL;")
-    dbconn().run("ALTER TABLE games ALtER COLUMN imgid SET DEFAULT next_imgid();")
+    dbconn().run("ALTER TABLE games ALTER COLUMN imgid SET DEFAULT next_imgid();")
+    dbconn(True).run("ALTER TABLE games ADD CONSTRAINT games_imgid_key UNIQUE (imgid);")
 
-    import updategames
-
-    updategames.generatesprites()
+    common.generatesprites()
 
 
 if __name__ == "__main__":

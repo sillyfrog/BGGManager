@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, request, redirect, Response, jsonify
 import json
 import common
 import copy
 import threading
 import subprocess
+import time
 
 from PIL import Image
 
@@ -86,6 +87,8 @@ def gamelayout():
 
     # Check every column has at least one game and goes from top to bottom
     # if not, insert blank game as required
+    if minrow is None:
+        return "No game locations configured"
     for col in columns:
         coltop = None
         colbottom = None
@@ -192,6 +195,59 @@ def game(bggid):
         formatkey=common.formatgamekey,
         groups=common.getgroups(),
     )
+
+
+@app.route("/customgame/<int(signed=True):bggid>", methods=["GET", "POST"])
+def customgame(bggid):
+    if request.method == "POST":
+        if request.form.get("delete") == "delete" and bggid < 0:
+            common.dbconn().run("DELETE FROM games WHERE bggid = %s;", [bggid])
+            return redirect("/")
+
+        if bggid == 0:
+            # This is a new record get an ID and go to work
+            common.dbconn().run(
+                """
+                INSERT INTO games (bggid) VALUES (
+                    (SELECT MIN(bggid) FROM (SELECT bggid FROM games UNION SELECT 0 AS bggid) bggids)-1
+                    );
+                """
+            )
+            dbid = common.dbconn().one("SELECT lastval();")
+            bggid = common.dbconn().one(
+                "SELECT bggid FROM games WHERE id = %s;", [dbid]
+            )
+        if "image" in request.files and request.files["image"].filename != "":
+            # New image, save it
+            # Get the image ID
+            imgpath = common.IMAGES_PATH / "{}.jpg".format(bggid)
+            request.files["image"].save(str(imgpath))
+            # Need to also make a thumbnail, will just use the same file
+            thumbpath = common.THUMBS_PATH / "{}.jpg".format(bggid)
+            thumbpath.open("wb").write(imgpath.open("rb").read())
+
+            # Update the master sprite image
+            common.generatesprites()
+
+        # Save the rest of the fields
+        common.dbconn().run(
+            "UPDATE games SET name = %s, description = %s, status = %s WHERE bggid = %s;",
+            [
+                request.form["name"],
+                request.form["description"],
+                request.form["status"],
+                bggid,
+            ],
+        )
+
+        return redirect("/customgame/{}".format(bggid))
+    else:
+        if bggid == 0:
+            # New game, need to assign an ID on POST
+            game = {"status": "own"}
+        else:
+            game = common.querygames(bggid=bggid)
+        return render_template("customgame.jinja", game=game, time=time.time())
 
 
 @app.route("/scanbarcode")

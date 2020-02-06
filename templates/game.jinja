@@ -146,6 +146,9 @@
             {% endfor %}
           </ul>
           {% endif %}
+          {% if game.bggid < 0 %}
+            <a href="/customgame/{{ game.bggid }}" class="btn btn-primary">Edit Custom Game</a>
+          {% endif %}
         </p>
       </div>
     </div>
