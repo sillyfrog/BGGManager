@@ -20,7 +20,7 @@ The "build-run-image.sh" shows an example of how to build and run the Docker ima
 
 I'm using the Docker Hub Postgres image, and have a basic setup. See the docs at https://hub.docker.com/_/postgres/ for how to do this.
 
-Once you have Postgres up and running, connect to the DB and run the SQL in `setup.sql`. This will create all of the required tables etc.
+Once you have Postgres up and running, connect to the DB and run the SQL in `setup.sql`, then run the `./upgradedb.py` script, or run the `./upgradedb.py` script with a valid config.json. This will create all of the required tables etc and update them for the current release.
 
 ## MQTT
 
@@ -68,4 +68,8 @@ Barcode and camera support requires the latest OS and Browser. I have tested wit
 
 # Updating
 
-The latest release requires some updates to the DB, and this data will need to be back filled. To do this, change to the updates directory `cd updates` and then run the `./v1-update.py` script.
+The latest release requires some updates to the DB, and this data will need to be back filled. To do this, simply run the `./upgradedb.py` script.
+
+# Development
+
+I have done all my development in `vscode`, and there is a `.devcontainer` configured. To use this, copy the `devconfig-sample.json` to the root directory as `config.json`, and update your BGG username and password. After you run the _Reopen in Container_ command in vscode, open a terminal, and run the `run-dev-server` script. This will create the required tables, and start the flask server, and keep it running in a loop should it crash etc. You should also run `updategames.py` at least once to populate the DB with some data for testing.
