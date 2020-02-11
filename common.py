@@ -6,6 +6,7 @@ import datetime
 import requests
 import json
 import math
+import html
 from PIL import Image
 
 
@@ -156,6 +157,7 @@ def formatfloat(val):
 
 
 def formatgamevals(game):
+    game["name"] = html.escape(game["name"])
     game["statustxt"] = STATUS.get(game["status"], game["status"])
     game["ratingtxt"] = formatfloat(game["rating"])
     game["complexitytxt"] = formatfloat(game["complexity"])

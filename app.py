@@ -301,6 +301,10 @@ def processbarcode():
                             rethtml = "<h1>No Location Configured</h1>"
                         else:
                             rethtml = "<h2> Location: {}</h2>".format(loc)
+                        gameinfo = common.querygames(bggid)
+                        rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
+                            bggid, gameinfo["name"],
+                        )
         rethtml += "<p>Tap to clear</p>"
         ret["html"] = rethtml
     return jsonify(ret)
