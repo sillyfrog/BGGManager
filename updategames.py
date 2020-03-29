@@ -338,7 +338,9 @@ def main(logfile=sys.stdout):
     newplays = common.getplays(status=common.TO_UPLOAD)
     log("Uploading to BGG {} plays".format(len(newplays)))
     for play in newplays:
-        bggid = common.postplay(play)
+        if play["gamebggid"] < 0:
+            # Don't upload internal games
+            continue
         dbconn().run(
             "UPDATE plays SET bggid = %s WHERE id = %s", [bggid, play["playid"]]
         )

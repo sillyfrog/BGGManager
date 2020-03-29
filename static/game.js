@@ -86,6 +86,8 @@ function updatePlays() {
     cell.colSpan = 4;
     cell.innerText = "Updating...";
 
+    stats = {};
+
     fetch('/plays/' + bggid)
         .then(function (response) {
             return response.json();
@@ -118,10 +120,72 @@ function updatePlays() {
                         if (oddrow) row.classList.add("table-info");
                     }
                     addPlayer(row, player);
+                    playerstats = stats[player.name] || { "wins": 0, "plays": 0, "totalscores": 0, "countscores": 0, "highscore": null, "lowscore": null };
+                    if (player.win) {
+                        playerstats.wins += 1;
+                    }
+                    playerstats.plays += 1;
+                    if (player.score != null) {
+                        playerstats.totalscores += player.score;
+                        playerstats.countscores += 1;
+                        if (playerstats.highscore == null || player.score > playerstats.highscore) {
+                            playerstats.highscore = player.score;
+                        }
+                        if (playerstats.lowscore == null || player.score < playerstats.lowscore) {
+                            playerstats.lowscore = player.score;
+                        }
+                    }
+                    stats[player.name] = playerstats;
+
                     row = null;
                 }
             }
+
+            playsstats(stats);
         });
+}
+
+function playsstats(stats) {
+    var donughtdata = [];
+    var tabledata = [];
+    for (var player in stats) {
+        pstats = stats[player];
+        if (pstats.wins) {
+            donughtdata.push({ "name": player, "value": pstats.wins });
+        }
+        tabledata.push([player, pstats.wins, pstats.plays, (pstats.totalscores / pstats.countscores).toFixed(1), pstats.highscore, pstats.lowscore]);
+    }
+    donughtdata.sort((a, b) => a.value - b.value);
+    var e = document.getElementById("play-donught");
+    e.innerHTML = '';
+    if (donughtdata.length) {
+        e.appendChild(donughtchart(donughtdata, "Wins"));
+    } else {
+        e.innerHTML = "<h4>No wins recorded</h4>";
+    }
+
+    tabledata.sort((a, b) => {
+        // Don't sort by name, start at col 2
+        for (var i = 1; i < 6; i++) {
+            if (a[i] != b[i]) {
+                // Reverse order
+                return b[i] - a[i];
+            }
+        }
+        return 0;
+    });
+    document.getElementById("statsdata").innerHTML = "";
+    rows = d3.select("#statsdata")
+        .selectAll("tr")
+        .data(tabledata)
+        .enter()
+        .append("tr");
+    rows.selectAll("td")
+        .data(row => row)
+        .enter()
+        .append("td")
+        .text(e => e);
+
 }
 
 function recordPlay() {

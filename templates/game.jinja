@@ -10,7 +10,9 @@
   <script>
     var bggid = {{ game.bggid }};
   </script>
-  <script type="text/javascript" src="/static/game.js?nocache5"></script>
+  <script type="text/javascript" src="/static/d3.v5.js"></script>
+  <script type="text/javascript" src="/static/graphs.js"></script>
+  <script type="text/javascript" src="/static/game.js"></script>
 </head>
 
 <body onLoad="locategame();updatePlays();">
@@ -82,6 +84,31 @@
           </tbody>
         </table>
         <button id="recordplaybtn" class="btn btn-primary btn-lg btn-block" onClick="recordPlay();">Record Play</button>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header">
+      <h4 class="my-0 font-weight-normal">Play Stats</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col text-center">
+          <div id="play-donught" class="playgraph"></div>
+        </div>
+        <div class="col text-center">
+          <table class="table table-sm table-striped">
+            <thead>
+              <th>Player</th>
+              <th>Wins</th>
+              <th>Plays</th>
+              <th>Avg</th>
+              <th>High</th>
+              <th>Low</th>
+            </thead>
+            <tbody id="statsdata"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

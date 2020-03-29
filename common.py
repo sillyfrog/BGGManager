@@ -233,6 +233,7 @@ def querygames(
             ) AS categories,
             e.name AS expansionname,
             (SELECT MAX(date) FROM plays WHERE g.bggid = plays.gamebggid) AS lastplay,
+            (SELECT COUNT(*) FROM plays WHERE g.bggid = plays.gamebggid) AS numplays,
             ARRAY(SELECT barcode FROM barcodes WHERE barcodes.bggid = g.bggid) as barcodes
             FROM games g 
                 LEFT OUTER JOIN games e ON g.expansionbggid = e.bggid 
@@ -603,4 +604,3 @@ if __name__ == "__main__":
 #        {"name": "Hermione", "color": "", "score": null, "win": false, "new": false},
 #    ],
 # }
-

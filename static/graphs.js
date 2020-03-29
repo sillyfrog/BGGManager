@@ -11,7 +11,7 @@ srcdata = [
 
 
 
-function donughtchart(data) {
+function donughtchart(data, title) {
     const width = 500;
     const height = Math.min(width, 500);
     const pie = d3.pie()
@@ -25,7 +25,7 @@ function donughtchart(data) {
     const arcs = pie(data);
     const color = d3.scaleOrdinal()
         .domain(data.map(d => d.name))
-        .range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), data.length).reverse());
+        .range(d3.quantize(t => { t = t || 0; return d3.interpolateSpectral(t * 0.8 + 0.1); }, data.length).reverse());
 
     const svg = d3.create("svg")
         .attr("viewBox", [-width / 2, -height / 2, width, height]);
@@ -56,7 +56,13 @@ function donughtchart(data) {
             .attr("fill-opacity", 0.7)
             .text(d => d.data.value.toLocaleString()));
 
+    svg.append("text")
+        .attr("dominant-baseline", "middle")
+        .attr("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-weight", "bold")
+        .attr("font-size", 48)
+        .text(title);
+
     return svg.node();
 }
-e = document.getElementById("elem");
-e.appendChild(donughtchart(srcdata));

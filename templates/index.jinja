@@ -7,7 +7,7 @@
   <script>
     var tempp = [];
     var gamestable;
-    var DEFAULT_HIDDEN = new Set(["Location", "Max Players", "Minutes", "Complexity", "Last Play", "Group", "Mechanics/Categories"]);
+    var DEFAULT_HIDDEN = new Set(["Location", "Max Players", "Minutes", "Complexity", "Last Play", "Num Plays", "Group", "Mechanics/Categories"]);
     var FILTER_COL = new Set(['Group', 'Status']);
     var MAXMIN_COL = new Set(['Max Players', 'Minutes']);
 
@@ -169,6 +169,7 @@
         <th>Group</th>
         <th>Complexity</th>
         <th>Last Play</th>
+        <th>Num Plays</th>
         <th>Location</th>
         <th>Max Players</td>
         <th>Minutes</th>
@@ -187,6 +188,7 @@
         <td>{{ game.groupname }}</td>
         <td>{{ game.complexitytxt }}</td>
         <td>{{ game.lastplaytxt }}</td>
+        <td>{{ game.numplays }}</td>
         <td>{{ game.rowcoltxt }}</td>
         <td>{{ game.maxplayers }}</td>
         <td>{{ game.playingtime }}</td>

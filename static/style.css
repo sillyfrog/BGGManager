@@ -71,3 +71,9 @@ border-radius: .25rem;
   .tt-suggestion p {
     margin: 0;
   }
+
+  .playgraph {
+    max-width: 300px;
+    margin: 0 auto;
+    /* border:1px solid red;  */
+  }
