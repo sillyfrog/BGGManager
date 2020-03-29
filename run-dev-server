@@ -8,7 +8,7 @@ os.system("./upgradedb.py")
 while 1:
     print("Running flask, press Ctrl+C to force a restart")
     print("press Ctrl+c twice quickly to exit")
-    os.system('flask run -h "0.0.0.0"')
+    os.system('flask run -h "0.0.0.0" -p 80')
     print()
     print("Press Ctrl+C quickly to exit. Restarting flask...")
     time.sleep(2)

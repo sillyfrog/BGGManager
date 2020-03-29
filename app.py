@@ -303,7 +303,7 @@ def processbarcode():
                             rethtml = "<h2> Location: {}</h2>".format(loc)
                         gameinfo = common.querygames(bggid)
                         rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
-                            bggid, gameinfo["name"],
+                            bggid, gameinfo["name"]
                         )
         rethtml += "<p>Tap to clear</p>"
         ret["html"] = rethtml

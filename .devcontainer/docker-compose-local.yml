@@ -17,6 +17,8 @@ services:
       - CONFIG=/workspace/.devcontainer/config.json
       - FLASK_APP=app.py
       - FLASK_DEBUG=1
+    ports:
+      - 80:80
   
   postgres:
     image: postgres

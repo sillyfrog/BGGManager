@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 {% from 'tools.jinja' import navbar, header %}
+
 <head>
   {{ header("Groups") }}
-    <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
-    <script>
-      function updateGroups() {
-        fetch('/getgroups')
+  <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
+  <script>
+    function updateGroups() {
+      fetch('/getgroups')
         .then(function (response) {
-            return response.json();
+          return response.json();
         })
         .then(function (response) {
           var tbody = document.getElementById("groups");
           while (tbody.rows.length > 0) tbody.deleteRow(-1);
-          response.push({'id':'new', 'name':''})
+          response.push({ 'id': 'new', 'name': '' })
           for (group of response) {
             row = tbody.insertRow();
             var cell = row.insertCell();
@@ -26,32 +27,32 @@
             cell.appendChild(input);
           }
         });
-      }
+    }
 
-      function saveGroups() {
-        var tbody = document.getElementById("groups");
-        var b = document.getElementById("savegroups");
-        b.innerHTML = "Saving... ";
-        b.classList.remove('btn-primary');
-        b.classList.remove('btn-success');
-        b.classList.remove('btn-danger');
-        b.classList.add('btn-info');
-        var groups = [];
-        for (row of tbody.rows) {
-          var jqrow = $(row);
-          var id = jqrow.find("td")[0].innerText;
-          var name = jqrow.find("input[name=name]")[0].value;
-          groups.push({"id":id, "name":name})
-        };
-        fetch('/updategroups', {
+    function saveGroups() {
+      var tbody = document.getElementById("groups");
+      var b = document.getElementById("savegroups");
+      b.innerHTML = "Saving... ";
+      b.classList.remove('btn-primary');
+      b.classList.remove('btn-success');
+      b.classList.remove('btn-danger');
+      b.classList.add('btn-info');
+      var groups = [];
+      for (row of tbody.rows) {
+        var jqrow = $(row);
+        var id = jqrow.find("td")[0].innerText;
+        var name = jqrow.find("input[name=name]")[0].value;
+        groups.push({ "id": id, "name": name })
+      };
+      fetch('/updategroups', {
         headers: {
-            'Content-Type': 'application/json'
+          'Content-Type': 'application/json'
         },
         method: "POST",
         body: JSON.stringify(groups)
-    })
+      })
         .then(function (response) {
-            return response.text();
+          return response.text();
         })
         .then(function (response) {
           updateGroups();
@@ -61,10 +62,11 @@
           b.classList.remove('btn-danger');
           b.classList.add('btn-success');
         });
-      }
-    </script>
-    <script type="text/javascript" src="/static/game.js"></script>
+    }
+  </script>
+  <script type="text/javascript" src="/static/game.js"></script>
 </head>
+
 <body onLoad="updateGroups();">
   {{ navbar('Groups') }}
   <table class="table table-sm ">
@@ -78,7 +80,5 @@
   <button id="savegroups" class="btn btn-primary btn-lg btn-block" onClick="saveGroups();">Update Groups</button>
   <p>&nbsp;</p>
 </body>
+
 </html>
-
-
-

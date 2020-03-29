@@ -55,9 +55,38 @@ const videoButtons = document.querySelector('#sourcebuttons');
 //const selectors = [videoSelect];
 var videoSource = undefined;
 
+// No longer using local storage is it expires too fast.
+// Treating cam as an opaque string, that maybe binary, so encoding to base64
+function saveCamera(cam) {
+    console.debug("Saving camera", cam);
+    var date = new Date();
+    date.setTime(date.getTime() + (365 * 10 * 24 * 60 * 60 * 1000));
+    document.cookie = "camera=" + btoa(cam) + "; expires=" + date.toUTCString() + "; path=/";
+    // window.localStorage.setItem("camera", cam);
+}
+
+function getCookie(name) {
+    var nameEQ = name + "=";
+    for (var c of document.cookie.split(';')) {
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+function getCamera() {
+    var cam64 = getCookie("camera");
+    var ret = null;
+    if (cam64) {
+        ret = atob(cam64);
+    }
+    console.debug("Returning camera", ret);
+    return ret;
+}
+
 function selectVideo(but) {
     videoSource = this.value;
-    window.localStorage.setItem("camera", this.value);
+    saveCamera(this.value);
     start();
 }
 
@@ -66,7 +95,7 @@ function gotDevices(deviceInfos) {
     while (videoButtons.firstChild) {
         videoButtons.removeChild(videoButtons.firstChild);
     }
-    var lastcamera = window.localStorage.getItem("camera");
+    var lastcamera = getCamera();
     for (let i = 0; i !== deviceInfos.length; ++i) {
         const deviceInfo = deviceInfos[i];
         const button = document.createElement('button');
