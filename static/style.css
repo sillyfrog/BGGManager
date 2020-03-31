@@ -74,6 +74,6 @@ border-radius: .25rem;
 
   .playgraph {
     max-width: 300px;
+    min-width: 100px;
     margin: 0 auto;
-    /* border:1px solid red;  */
   }

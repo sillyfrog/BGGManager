@@ -341,6 +341,7 @@ def main(logfile=sys.stdout):
         if play["gamebggid"] < 0:
             # Don't upload internal games
             continue
+        bggid = common.postplay(play)
         dbconn().run(
             "UPDATE plays SET bggid = %s WHERE id = %s", [bggid, play["playid"]]
         )
