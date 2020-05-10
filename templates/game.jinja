@@ -102,6 +102,7 @@
               <th>Player</th>
               <th>Wins</th>
               <th>Plays</th>
+              <th title="Wins as % of plays">Wins %</th>
               <th>Avg</th>
               <th>High</th>
               <th>Low</th>
@@ -175,15 +176,15 @@
         {% if game.barcodes %}
         <br>
         <b>Associated Bar Codes</b>:
-        <ul>
-          {% for barcode in game.barcodes%}
-          <li>{{ barcode }}</li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-        {% if game.bggid < 0 %}
-        <a href="/customgame/{{ game.bggid }}" class="btn btn-primary">Edit Custom Game</a>
-        {% endif %}
+      <ul>
+        {% for barcode in game.barcodes%}
+        <li>{{ barcode }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if game.bggid < 0 %}
+      <a href="/customgame/{{ game.bggid }}" class="btn btn-primary">Edit Custom Game</a>
+      {% endif %}
       </p>
     </div>
   </div>

@@ -1,3 +1,5 @@
+# To run in debug/development mode:
+#   FLASK_DEBUG=1 flask run -h 0.0.0.0 -p 80
 from flask import Flask, render_template, request, redirect, Response, jsonify
 import json
 import common

@@ -153,7 +153,7 @@ function playsstats(stats) {
         if (pstats.wins) {
             donughtdata.push({ "name": player, "value": pstats.wins });
         }
-        tabledata.push([player, pstats.wins, pstats.plays, (pstats.totalscores / pstats.countscores).toFixed(1), pstats.highscore, pstats.lowscore]);
+        tabledata.push([player, pstats.wins, pstats.plays, (pstats.wins / pstats.plays * 100).toFixed(0) + "%", (pstats.totalscores / pstats.countscores).toFixed(1), pstats.highscore, pstats.lowscore]);
     }
     donughtdata.sort((a, b) => a.value - b.value);
     var e = document.getElementById("play-donught");
