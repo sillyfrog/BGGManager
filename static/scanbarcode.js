@@ -55,14 +55,14 @@ const videoButtons = document.querySelector('#sourcebuttons');
 //const selectors = [videoSelect];
 var videoSource = undefined;
 
-// No longer using local storage is it expires too fast.
-// Treating cam as an opaque string, that maybe binary, so encoding to base64
+// The camid changes at reboot (and maybe other times)
+// Save the camera name displayed to the user
 function saveCamera(cam) {
     console.debug("Saving camera", cam);
-    var date = new Date();
-    date.setTime(date.getTime() + (365 * 10 * 24 * 60 * 60 * 1000));
-    document.cookie = "camera=" + btoa(cam) + "; expires=" + date.toUTCString() + "; path=/";
-    // window.localStorage.setItem("camera", cam);
+    // var date = new Date();
+    // date.setTime(date.getTime() + (365 * 10 * 24 * 60 * 60 * 1000));
+    // document.cookie = "camera=" + btoa(cam) + "; expires=" + date.toUTCString() + "; path=/";
+    window.localStorage.setItem("camera", cam);
 }
 
 function getCookie(name) {
@@ -75,18 +75,19 @@ function getCookie(name) {
 }
 
 function getCamera() {
-    var cam64 = getCookie("camera");
-    var ret = null;
-    if (cam64) {
-        ret = atob(cam64);
-    }
+    // var cam64 = getCookie("camera");
+    // var ret = null;
+    // if (cam64) {
+    //     ret = atob(cam64);
+    // }
+    var ret = window.localStorage.getItem("camera");
     console.debug("Returning camera", ret);
     return ret;
 }
 
 function selectVideo(but) {
     videoSource = this.value;
-    saveCamera(this.value);
+    saveCamera(this.innerText);
     start();
 }
 
@@ -103,14 +104,14 @@ function gotDevices(deviceInfos) {
         button.classList.add('btn');
         button.classList.add('btn-primary');
         if (deviceInfo.kind === 'videoinput') {
-            if (deviceInfo.deviceId == lastcamera && videoSource != deviceInfo.deviceId) {
-                videoSource = deviceInfo.deviceId;
-                start();
-            }
             var space = document.createElement('span');
             space.innerHTML = "&nbsp;";
             videoButtons.appendChild(space);
             button.innerText = deviceInfo.label || `camera ${i}`;
+            if (button.innerText == lastcamera && videoSource != deviceInfo.deviceId) {
+                videoSource = deviceInfo.deviceId;
+                start();
+            }
             button.onclick = selectVideo;
             videoButtons.appendChild(button);
         } else {
