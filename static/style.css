@@ -77,3 +77,7 @@ border-radius: .25rem;
     min-width: 100px;
     margin: 0 auto;
   }
+
+  .toggle-vis {
+    margin-bottom: 3px;
+  }

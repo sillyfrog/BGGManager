@@ -4,10 +4,12 @@
 
 <head>
   {{ header("All Games") }}
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <script>
     var tempp = [];
     var gamestable;
     var DEFAULT_HIDDEN = new Set(["Location", "Max Players", "Minutes", "Complexity", "Last Play", "Num Plays", "Group", "Mechanics/Categories"]);
+    var DEFAULT_SMALL_HIDDEN = new Set(["Status"]);
     var FILTER_COL = new Set(['Group', 'Status']);
     var MAXMIN_COL = new Set(['Max Players', 'Minutes']);
 
@@ -56,6 +58,7 @@
       });
 
       var buttondiv = $("div.hidebuttons");
+      var smallscreen = window.matchMedia('(max-width: 400px)').matches;
       gamestable.columns().every(function () {
         var column = this;
         var header = column.header();
@@ -71,6 +74,11 @@
         buttondiv.append(" ");
         if (DEFAULT_HIDDEN.has(txt)) {
           newbutton.trigger("click");
+        }
+        if (smallscreen){
+          if (DEFAULT_SMALL_HIDDEN.has(txt)){
+            newbutton.trigger("click");
+          }
         }
 
         // Provide a filter dropdown as required
@@ -132,6 +140,23 @@
         }
       });
       $("#sort_Status").val("Own").trigger("change");
+
+      // Filter by any passed query parameters
+      var url = new URL(window.location);
+      var search = url.searchParams.get("q");
+      if (search) {
+        // Do the search, just on the name column
+        gamestable.column(1).search(search).draw();
+        if (gamestable.rows({search: 'applied'}).data().length == 1) {
+          // With exactly one result, go to that game
+          var bggid= parseInt(gamestable.cell({search: 'applied'}).node().parentNode.attributes['_gameid'].value);
+          location = 'game/' + bggid;
+        } else {
+          // put the text in the search box and display that
+          gamestable.search(search).draw();
+        gamestable.column(1).search("");
+        }
+      }
     });
     function toggleVis(e) {
       e.preventDefault();
@@ -161,7 +186,7 @@
 
 <body>
   {{ navbar('All Games') }}
-  <table id="gamestable" class="table table-hover" style="width:98%">
+  <table id="gamestable" class="table table-hover" style="width:98%;">
     <thead>
       <tr>
         <th>Icon</th>
