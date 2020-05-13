@@ -50,7 +50,7 @@
       });
       gamestable = $('#gamestable').DataTable({
         paging: false,
-        "dom": "<'row'<'col'f><'col hidebuttons' l>>",
+        "dom": "<'row'<'col'f><'col hidebuttons d-none d-sm-block' l>>",
         "order": [[1, "asc"]],
         columnDefs: [
           { targets: [3, 6, 7], "type": "num" },

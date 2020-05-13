@@ -10,13 +10,6 @@ import time
 
 from PIL import Image
 
-try:
-    from pyzbar import pyzbar
-
-    BARCODE_SUPPORT = True
-except Exception:
-    BARCODE_SUPPORT = False
-
 app = Flask(__name__, static_folder=str(common.DIR_BASE / "static"))
 
 
@@ -264,51 +257,42 @@ def scanbarcode():
 @app.route("/processbarcode", methods=["GET", "POST"])
 def processbarcode():
     ret = {"html": "<h1>Not Supported</h1>"}
-    if BARCODE_SUPPORT:
-        content = json.loads(request.form["json"])
-        rethtml = "<h1>No Barcode Found</h1>"
-        ret
-        if request.files:
-            print("Got upload!", request.files)
-            f = request.files["upimage"]
-            i = Image.open(f)
-            data = pyzbar.decode(i)
-            if data:
-                code = data[0].data.decode()
-                if content.get("bggid"):
-                    # Have a game ID, associate with the game, then redirect back
-                    common.dbconn(ignoreerror=True).run(
-                        "INSERT INTO barcodes (bggid, barcode) VALUES (%s, %s);",
-                        [content["bggid"], code],
-                    )
-                    rethtml = "<h3>Found code: {}</h3>".format(code)
-                    js = """setTimeout(function () {{
-                        document.location = '/game/{}';
-                    }}, 2000);""".format(
-                        content["bggid"]
-                    )
-                    ret["js"] = js
-                else:
-                    # Look up the game id
-                    bggid = common.dbconn().one(
-                        "SELECT bggid FROM barcodes WHERE barcode = %s;", [code]
-                    )
-                    print("FOUND:", bggid, "Code:", code)
-                    if bggid is None:
-                        rethtml = "<h1>No Game Found Matching Barcode</h1>"
-                        rethtml += "<p>Barcode: {}</p>".format(code)
-                    else:
-                        loc = locate(bggid)
-                        if loc == "FAIL":
-                            rethtml = "<h1>No Location Configured</h1>"
-                        else:
-                            rethtml = "<h2> Location: {}</h2>".format(loc)
-                        gameinfo = common.querygames(bggid)
-                        rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
-                            bggid, gameinfo["name"]
-                        )
-        rethtml += "<p>Tap to clear</p>"
-        ret["html"] = rethtml
+    content = request.get_json()
+    rethtml = "<h1>Error</h1>"
+    code = content["barcode"]
+    if content.get("bggid"):
+        # Have a game ID, associate with the game, then redirect back
+        common.dbconn(ignoreerror=True).run(
+            "INSERT INTO barcodes (bggid, barcode) VALUES (%s, %s);",
+            [content["bggid"], code],
+        )
+        rethtml = "<h3>Added code: {}</h3>".format(code)
+        js = """setTimeout(function () {{
+            document.location = '/game/{}';
+        }}, 2000);""".format(
+            content["bggid"]
+        )
+        ret["js"] = js
+    else:
+        # Look up the game id
+        bggid = common.dbconn().one(
+            "SELECT bggid FROM barcodes WHERE barcode = %s;", [code]
+        )
+        if bggid is None:
+            rethtml = "<h1>No Game Found Matching Barcode</h1>"
+            rethtml += "<p>Barcode: {}</p>".format(code)
+        else:
+            loc = locate(bggid)
+            if loc == "FAIL":
+                rethtml = "<h1>No Location Configured</h1>"
+            else:
+                rethtml = "<h2> Location: {}</h2>".format(loc)
+            gameinfo = common.querygames(bggid)
+            rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
+                bggid, gameinfo["name"]
+            )
+    rethtml += "<p>Tap to clear</p>"
+    ret["html"] = rethtml
     return jsonify(ret)
 
 

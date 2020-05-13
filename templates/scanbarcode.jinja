@@ -52,15 +52,9 @@
       <label for="videoSource">Video source:</label> <span id="sourcebuttons"></span></span>
     </div>
 
-    <video id="video" playsinline autoplay style="padding: 1em; width: 100%; height: auto;"
-      onclick="takeimage();"></video>
+    <video id="video" playsinline autoplay style="padding: 1em; width: 100%; height: auto;"></video>
   </div>
-
-  <input id="vid-take" type="button" value="Take Photo" />
-  <br>
-  <div id="vid-canvas"> </div>
-
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
   <script src="/static/scanbarcode.js" async></script>
 </body>
 

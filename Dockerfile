@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install -y libzbar0
 
 RUN pip install --upgrade pip && \
-    pip install flask postgres requests paho-mqtt pillow pyzbar
+    pip install flask postgres requests paho-mqtt pillow
 
 COPY . /app/
 COPY static/ /app/static/

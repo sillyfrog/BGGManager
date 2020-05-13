@@ -1,45 +1,32 @@
 'use strict';
 
+const codeReader = new ZXing.BrowserMultiFormatReader()
+var seenBarcodes = new Set();
+
 window.addEventListener("load", function () {
-    // [1] GET ALL THE HTML ELEMENTS
-    var takeelem = document.getElementById("vid-take");
-    takeelem.addEventListener("click", takeimage);
+    start();
 });
 
-function takeimage() {
-    var videoelem = document.getElementById("video");
-    var canvaselem = document.getElementById("vid-canvas");
-    shutter();
-    // Create snapshot from video
-    var draw = document.createElement("canvas");
-    draw.width = videoelem.videoWidth;
-    draw.height = videoelem.videoHeight;
-    var context2D = draw.getContext("2d");
-    context2D.drawImage(videoelem, 0, 0, videoelem.videoWidth, videoelem.videoHeight);
-    // Create snapshot from video
-    canvaselem.innerHTML = "";
-    canvaselem.appendChild(draw)
-    // Upload to server
-    draw.toBlob(function (blob) {
-        var data = new FormData();
-        data.append('json', JSON.stringify({ "bggid": bggid, "putaway": putaway }));
-        data.append('upimage', blob);
-        fetch('/processbarcode', {
-            method: 'POST',
-            body: data
+function foundBarcode(barcode) {
+    var data = new FormData();
+    fetch('/processbarcode', {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify({ "barcode": barcode, "bggid": bggid, "putaway": putaway })
+    })
+        .then(function (response) {
+            return response.json();
         })
-            .then(function (response) {
-                return response.json();
-            })
-            .then(function (response) {
-                var alrt = document.getElementById('alert');
-                alrt.innerHTML = response['html'];
-                alrt.classList.add('on');
-                if (response['js']) {
-                    eval(response['js']);
-                }
-            })
-    }, "image/jpeg");
+        .then(function (response) {
+            var alrt = document.getElementById('alert');
+            alrt.innerHTML = response['html'];
+            alrt.classList.add('on');
+            if (response['js']) {
+                eval(response['js']);
+            }
+        })
 }
 
 function shutter() {
@@ -59,27 +46,10 @@ var videoSource = undefined;
 // Save the camera name displayed to the user
 function saveCamera(cam) {
     console.debug("Saving camera", cam);
-    // var date = new Date();
-    // date.setTime(date.getTime() + (365 * 10 * 24 * 60 * 60 * 1000));
-    // document.cookie = "camera=" + btoa(cam) + "; expires=" + date.toUTCString() + "; path=/";
     window.localStorage.setItem("camera", cam);
 }
 
-function getCookie(name) {
-    var nameEQ = name + "=";
-    for (var c of document.cookie.split(';')) {
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-
 function getCamera() {
-    // var cam64 = getCookie("camera");
-    // var ret = null;
-    // if (cam64) {
-    //     ret = atob(cam64);
-    // }
     var ret = window.localStorage.getItem("camera");
     console.debug("Returning camera", ret);
     return ret;
@@ -92,7 +62,7 @@ function selectVideo(but) {
 }
 
 function gotDevices(deviceInfos) {
-    // Handles being called several times to update labels. Preserve values.
+    // Handles being called several times to update labels.
     while (videoButtons.firstChild) {
         videoButtons.removeChild(videoButtons.firstChild);
     }
@@ -134,19 +104,26 @@ function handleError(error) {
 }
 
 function start() {
-    if (window.stream) {
-        window.stream.getTracks().forEach(track => {
-            track.stop();
-        });
-    }
-    //const videoSource = videoSelect.value;
     const constraints = {
         video: { width: 1280, height: 720, deviceId: videoSource ? { exact: videoSource } : undefined }
     };
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+
+    codeReader.reset();
+    codeReader.decodeFromVideoDevice(videoSource, 'video', (result, err) => {
+        if (result) {
+            console.log(result);
+            var barcode = result.text;
+            if (!seenBarcodes.has(barcode)) {
+                foundBarcode(barcode);
+                seenBarcodes.add(barcode);
+            }
+        }
+        if (err && !(err instanceof ZXing.NotFoundException)) {
+            console.error(err)
+            document.getElementById('result').textContent = err
+        }
+    })
+    console.log(`Started continuos decode from camera with id ${videoSource}`);
 }
-
-//videoSelect.onchange = start;
-
-start();
 
