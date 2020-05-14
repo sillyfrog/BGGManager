@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-{% from 'tools.jinja' import navbar, header %}
+{% from 'tools.jinja' import navbar, header, footer %}
 
 <head>
   {{ header("All Games") }}
@@ -50,21 +50,38 @@
       });
       gamestable = $('#gamestable').DataTable({
         paging: false,
-        "dom": "<'row'<'col'f><'col hidebuttons d-none d-sm-block' l>>",
+        "dom": "<'container-fluid'<'row'<'col'<f>>>",
         "order": [[1, "asc"]],
         columnDefs: [
           { targets: [3, 6, 7], "type": "num" },
         ]
       });
 
-      var buttondiv = $("div.hidebuttons");
+      // Clean up the search input
+      var filterDiv = $("#gamestable_filter")[0];
+      var searchInput = $(filterDiv).find("input")[0];
+      // Put in some place holder text
+      searchInput.placeholder = "Search...";
+      // Move to a child element of the filterDiv (for Bootstrap)
+      filterDiv.appendChild(searchInput);
+      // Add the required classes for an inputgroup
+      filterDiv.classList.add("input-group");
+      filterDiv.classList.add("input-group-sm");
+      // Remove the label element (using the placeholder text for display)
+      $(filterDiv).find("label").remove();
+      $(filterDiv).append('<div class="input-group-append"><button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+        '<span class="d-none d-sm-inline">Display Columns</span><span class="d-sm-none">Cols</span>' +
+        '</button><div class="dropdown-menu dropdown-menu-right" id="colselection"> </div></div>');
+
+
+      var buttondiv = $("#colselection");
       var smallscreen = window.matchMedia('(max-width: 400px)').matches;
       gamestable.columns().every(function () {
         var column = this;
         var header = column.header();
 
         // Setup the show/hide buttons
-        var newbutton = $("<button type='button' class='btn btn-primary btn-sm toggle-vis'></button>");
+        var newbutton = $("<button type='button' class='dropdown-item toggle-vis active'></button>");
         var txt = header.innerText;
         newbutton.text(txt);
         tempp.push(column);
@@ -75,8 +92,8 @@
         if (DEFAULT_HIDDEN.has(txt)) {
           newbutton.trigger("click");
         }
-        if (smallscreen){
-          if (DEFAULT_SMALL_HIDDEN.has(txt)){
+        if (smallscreen) {
+          if (DEFAULT_SMALL_HIDDEN.has(txt)) {
             newbutton.trigger("click");
           }
         }
@@ -147,14 +164,14 @@
       if (search) {
         // Do the search, just on the name column
         gamestable.column(1).search(search).draw();
-        if (gamestable.rows({search: 'applied'}).data().length == 1) {
+        if (gamestable.rows({ search: 'applied' }).data().length == 1) {
           // With exactly one result, go to that game
-          var bggid= parseInt(gamestable.cell({search: 'applied'}).node().parentNode.attributes['_gameid'].value);
+          var bggid = parseInt(gamestable.cell({ search: 'applied' }).node().parentNode.attributes['_gameid'].value);
           location = 'game/' + bggid;
         } else {
           // put the text in the search box and display that
           gamestable.search(search).draw();
-        gamestable.column(1).search("");
+          gamestable.column(1).search("");
         }
       }
     });
@@ -165,12 +182,10 @@
       // Toggle the visibility
       if (column.visible()) {
         column.visible(false);
-        e.target.classList.remove("btn-default");
-        e.target.classList.add("btn-secondary");
+        e.target.classList.remove("active");
       } else {
         column.visible(true);
-        e.target.classList.remove("btn-secondary");
-        e.target.classList.add("btn-default");
+        e.target.classList.add("active");
       }
     }
   </script>
@@ -231,6 +246,7 @@
       {% endfor %}
     </tbody>
   </table>
+  {{ footer() }}
 </body>
 
 </html>
