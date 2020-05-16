@@ -7,6 +7,7 @@ import requests
 import json
 import math
 import html
+import time
 from PIL import Image
 
 
@@ -429,22 +430,27 @@ def getplayernames():
 ALL = 1
 TO_UPLOAD = 2
 UPLOADED = 3
+TO_DELETE = 4
 
 
 def getplays(bgggameid=None, status=ALL):
     where = []
     args = []
     if status == TO_UPLOAD:
-        where.append("plays.bggid IS NULL")
+        where.append(
+            "(plays.bggid IS NULL OR plays.sync_state = 'update') AND plays.gamebggid > 0"
+        )
     elif status == UPLOADED:
         where.append("plays.bggid IS NOT NULL")
+    elif status == TO_DELETE:
+        where.append("plays.bggid IS NOT NULL AND sync_state = 'delete'")
 
     if bgggameid is not None:
         where.append("plays.gamebggid = %s")
         args.append(bgggameid)
     res = dbconn().all(
         """
-        SELECT plays.id AS playid, plays.bggid AS bggplayid, gamebggid, date, comments, name, color, score, new, win
+        SELECT plays.id AS playid, plays.bggid AS bggplayid, gamebggid, date, comments, name, color, score, new, win, sync_state
             FROM plays LEFT OUTER JOIN players ON 
                 (plays.id = players.playsid)
             WHERE {}
@@ -467,6 +473,7 @@ def getplays(bgggameid=None, status=ALL):
                 "bggplayid": rec.bggplayid,
                 "date": date,
                 "comments": rec.comments,
+                "sync_state": rec.sync_state,
                 "players": [],
             }
             ret.append(play)
@@ -489,11 +496,29 @@ def recordplay(playdata):
 
     If bggid is not supplied, it's assumed it needs to be uploaded to get
     an ID.
+    If a playid is supplied, then this is an update to an existing play.
     """
-    # Create a raw connecttion to ensure we get the correct row insert counts etc.
+    # Create a raw connection to ensure we get the correct row insert counts etc.
     conn = psycopg2.connect(CONFIG["dburl"])
     cur = conn.cursor()
-    if "bggid" in playdata:
+    playsid = None
+    if playdata.get("playid"):
+        playsid = playdata["playid"]
+        # Don't touch the bggid, other processes will be doing that
+        statement = """UPDATE plays
+            SET date = %(date)s, comments = %(comments)s, sync_state = 'update'
+            WHERE id = %(playid)s;"""
+        # Remove any players that are no longer part of this play
+        cur.execute("SELECT name FROM players WHERE playsid = %s", [playsid])
+        dbplayers = set(cur.fetchall())
+        for player in playdata["players"]:
+            dbplayers.discard(player["name"])
+        for player in dbplayers:
+            cur.execute(
+                "DELETE FROM players WHERE playsid = %s AND name = %s",
+                [playsid, player],
+            )
+    elif "bggid" in playdata:
         statement = """INSERT INTO plays (bggid, date, gamebggid, comments)
         VALUES (%(bggid)s, %(date)s, %(gamebggid)s, %(comments)s)
         ON CONFLICT DO NOTHING;
@@ -506,25 +531,52 @@ def recordplay(playdata):
     if cur.rowcount == 0:
         # Nothing was inserted, so this play must already be recorded, return
         return
-    cur.execute("SELECT LASTVAL();")
-    playsid = cur.fetchone()[0]
+    if playsid is None:
+        cur.execute("SELECT LASTVAL();")
+        playsid = cur.fetchone()[0]
     for player in playdata["players"]:
         player.update(playdata)
         player["playsid"] = playsid
         cur.execute(
             """INSERT INTO players (playsid, name, color, score, new, win)
-            VALUES (%(playsid)s, %(name)s, %(color)s, %(score)s, %(new)s, %(win)s)
-            ON CONFLICT DO NOTHING;
+                VALUES (%(playsid)s, %(name)s, %(color)s, %(score)s, %(new)s, %(win)s)
+            ON CONFLICT (playsid, name) DO UPDATE SET
+                color = %(color)s, score = %(score)s, new = %(new)s, win = %(win)s;
             """,
             player,
         )
     conn.commit()
 
 
+def markdeleteplay(playid):
+    dbconn().run("UPDATE plays SET sync_state = 'delete' WHERE id = %s", [playid])
+
+
 def isodate(date):
     if type(date) == str:
         return date
     return date.date().isoformat()
+
+
+bggsession = {}
+MAX_SESSION_AGE = 600
+
+
+def getbggsession():
+    """Returns a logged BGG session, using a cached connection if fresh
+    """
+
+    if bggsession.get("logintime", 0) < (time.time() - MAX_SESSION_AGE):
+        s = requests.Session()
+        r = s.post(
+            "https://boardgamegeek.com/login",
+            {"username": CONFIG["username"], "password": CONFIG["password"]},
+        )
+        if r.status_code != 200:
+            raise Exception("Error logging in ({}): {}".format(r.status_code, r.text))
+        bggsession["session"] = s
+        bggsession["logintime"] = time.time()
+    return bggsession["session"]
 
 
 def postplay(playdata):
@@ -538,6 +590,8 @@ def postplay(playdata):
         "ajax": 1,
         "action": "save",
     }
+    if playdata.get("bggplayid"):
+        postdata["playid"] = playdata["bggplayid"]
     postdata["objectid"] = str(playdata.get("gamebggid"))
     postdata["comments"] = playdata.get("comments")
     postdata["playdate"] = isodate(playdata.get("date"))
@@ -561,17 +615,30 @@ def postplay(playdata):
         postdata["players"].append(playerrec)
 
     # Now get a session cookie, and post the data
-    s = requests.Session()
-    r = s.post(
-        "https://boardgamegeek.com/login",
-        {"username": CONFIG["username"], "password": CONFIG["password"]},
-    )
-    if r.status_code != 200:
-        raise Exception("Error logging in ({}): {}".format(r.status_code, r.text))
+    s = getbggsession()
     r = s.post("https://boardgamegeek.com/geekplay.php", json=postdata)
     if r.status_code != 200:
         raise Exception("Error posting data ({}): {}".format(r.status_code, r.text))
     return int(r.json()["playid"])
+
+
+def postdeleteplay(play):
+    """Deletes the given play ID from BGG
+    """
+    postdata = {
+        "action": "delete",
+        "finalize": "1",
+        "playid": str(play["bggplayid"]),
+        "B1": "Yes",
+    }
+    s = getbggsession()
+    r = s.post("https://boardgamegeek.com/geekplay.php", postdata)
+    if r.status_code not in (200, 302):
+        raise Exception("Error posting data ({}): {}".format(r.status_code, r.text))
+    # Post was successful, delete from local db
+    dbconn().run(
+        "DELETE FROM plays WHERE id = %s AND sync_state = 'delete';", [play["playid"]]
+    )
 
 
 def getgroups():

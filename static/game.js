@@ -1,4 +1,6 @@
 var playernames = ['Example', 'Names', 'Here'];
+var currentPlayId = null;
+var gamePlays = {};
 
 $(document).ready(function () {
     // Update the list of available usernames
@@ -93,17 +95,36 @@ function updatePlays() {
             return response.json();
         })
         .then(function (plays) {
+            gamePlays = {};
             while (tbody.rows.length > 0) tbody.deleteRow(-1);
             var oddrow = true;
-            for (i = 0; i < plays.length; i++) {
-                play = plays[i];
+            for (var play of plays) {
+                gamePlays[play.playid] = play;
                 row = tbody.insertRow();
                 oddrow = !oddrow;
                 if (oddrow) row.classList.add("table-info");
+                if (play.sync_state === "delete") {
+                    row.style.textDecoration = "line-through";
+                    row.classList.add("text-muted");
+                }
 
                 var datecell = row.insertCell();
+                datecell.dataset['playid'] = play.playid;
                 h = document.createElement("h5");
                 h.innerText = play.date;
+                if (play.players.length >= 2) {
+                    datecell.rowSpan = play.players.length;
+                }
+                var editbutton = $('<div class="dropdown float-right">' +
+                    '<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-outline-secondary dropdown-toggle btn-sm">Edit</button>' +
+                    '<div class="dropdown-menu">' +
+                    '  <button class="dropdown-item" type="button" onclick="editPlay(this);">Edit…</button>' +
+                    '  <button class="dropdown-item" type="button" onclick="deletePlay(this);">Delete</button>' +
+                    '</div>' +
+                    '</div>');
+                if (play.sync_state !== "delete") {
+                    $(datecell).append(editbutton);
+                }
                 datecell.appendChild(h);
                 if (play.comments) {
                     c = document.createElement("p");
@@ -111,13 +132,14 @@ function updatePlays() {
                     datecell.appendChild(c);
                 }
 
-                if (play.players.length >= 2) {
-                    datecell.rowSpan = play.players.length;
-                }
                 for (player of play.players) {
                     if (row == null) {
                         row = tbody.insertRow();
                         if (oddrow) row.classList.add("table-info");
+                        if (play.sync_state === "delete") {
+                            row.style.textDecoration = "line-through";
+                            row.classList.add("text-muted");
+                        }
                     }
                     addPlayer(row, player);
                     playerstats = stats[player.name] || { "wins": 0, "plays": 0, "totalscores": 0, "countscores": 0, "highscore": null, "lowscore": null };
@@ -198,6 +220,10 @@ function recordPlay() {
         'comments': $('#comments')[0].value
     };
 
+    if (currentPlayId) {
+        play['playid'] = currentPlayId;
+    }
+
     var tbody = document.getElementById("newplaybody");
     var players = [];
     for (row of tbody.rows) {
@@ -241,20 +267,26 @@ function recordPlay() {
             var b = document.getElementById("recordplaybtn");
             b.classList.remove('btn-info');
             if (response == "OK") {
-                b.innerText = "Record Play";
-                b.classList.add('btn-primary');
-                $("#logplaydiv")[0].style.display = "none";
-                $("#logplaybtn")[0].disabled = false;
-                // Clear out the logged play info
-                var tbody = $("#newplaybody")[0];
-                while (tbody.rows.length > 0) tbody.deleteRow(-1);
-                $('#comments')[0].value = '';
+                resetLogPlayForm();
                 updatePlays();
             } else {
                 b.innerText = "Error: " + response;
                 b.classList.add('btn-danger');
             }
         });
+}
+
+function resetLogPlayForm() {
+    var b = document.getElementById("recordplaybtn");
+    b.classList.remove('btn-info');
+    b.innerText = "Record Play";
+    b.classList.add('btn-primary');
+    $("#logplaydiv").hide();
+    $("#logplaybtn")[0].disabled = false;
+    // Clear out the logged play info
+    var tbody = $("#newplaybody")[0];
+    while (tbody.rows.length > 0) tbody.deleteRow(-1);
+    $('#comments')[0].value = '';
 }
 
 function blurPlayer(obj) {
@@ -305,19 +337,80 @@ function addNewPlayPlayer() {
             source: substringMatcher(playernames)
         });
     playerinput[0].style.backgroundColor = "";
+    return row;
 }
 
-function logplay() {
-    $("#logplaydiv")[0].style.display = "";
-    var now = new Date();
-    var isodate = now.toISOString().substring(0, 10);
-    $("#date")[0].value = isodate;
+function editPlay(e) {
+    resetLogPlayForm();
+    currentPlayId = $(e).closest("td[data-playid]")[0].dataset.playid;
+    var play = gamePlays[currentPlayId];
+    $("#date").val(play.date);
+    $("#comments").val(play.comments);
+
+    for (var player of play.players) {
+        var row = addNewPlayPlayer();
+        row.find("input[name=player]").val(player.name);
+        row.find("input[name=score]").val(player.score);
+        row.find("input[name=color]").val(player.color);
+        row.find("input[name=win]").prop('checked', player.win);
+        row.find("input[name=new]").prop('checked', player.new);
+    }
     addNewPlayPlayer();
+    $("#logplaydiv").show();
     location.hash = "#top";
     location.hash = "#logplay";
     $("#logplaybtn")[0].disabled = true;
 }
 
+function isotoday() {
+    var now = new Date();
+    var year = now.getFullYear().toFixed(0);
+    var month = (now.getMonth() + 1).toFixed(0).padStart(2, "0");
+    var day = now.getDate().toFixed(0).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+}
+
+
+function logplay() {
+    resetLogPlayForm();
+    currentPlayId = null;
+    $("#date")[0].value = isotoday();
+    addNewPlayPlayer();
+    $("#logplaydiv").show();
+    location.hash = "#top";
+    location.hash = "#logplay";
+    $("#logplaybtn")[0].disabled = true;
+}
+
+var toDeletePlayId;
+function deletePlay(e) {
+    toDeletePlayId = $(e).closest("td[data-playid]")[0].dataset.playid;
+    $("#modalPlayDate").text(gamePlays[toDeletePlayId].date);
+    $("#modalConfirmDelete").modal("show");
+}
+
+function actionDeletePlay() {
+    $("#btnDoDelete").text("Deleting...");
+    fetch('/deleteplay', {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify({ 'playid': toDeletePlayId })
+    })
+        .then(function (response) {
+            return response.text();
+        })
+        .then(function (response) {
+            if (response == "OK") {
+                $("#btnDoDelete").text("Done");
+                toDeletePlayId = null;
+                window.location.reload();
+            } else {
+                $("#btnDoDelete").text("Error: " + response);
+            }
+        });
+}
 
 // Crap for the type ahead/combobox
 

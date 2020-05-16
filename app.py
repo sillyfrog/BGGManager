@@ -313,6 +313,13 @@ def recordplay():
     return "OK"
 
 
+@app.route("/deleteplay", methods=["POST"])
+def deleteplay():
+    content = request.json
+    common.markdeleteplay(content["playid"])
+    return "OK"
+
+
 @app.route("/playernames")
 def playernames():
     return jsonify(common.getplayernames())

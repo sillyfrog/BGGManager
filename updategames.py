@@ -343,7 +343,8 @@ def main(logfile=sys.stdout):
             continue
         bggid = common.postplay(play)
         dbconn().run(
-            "UPDATE plays SET bggid = %s WHERE id = %s", [bggid, play["playid"]]
+            "UPDATE plays SET bggid = %s, sync_state = NULL WHERE id = %s",
+            [bggid, play["playid"]],
         )
 
     plays = latestplays()
@@ -352,6 +353,11 @@ def main(logfile=sys.stdout):
         # This entire section relies on the DB to remove duplicates
         # both plays and players
         common.recordplay(play)
+
+    todeleteplays = common.getplays(status=common.TO_DELETE)
+    log("Deleting {} plays".format(len(todeleteplays)))
+    for play in todeleteplays:
+        common.postdeleteplay(play)
 
     if len(gamesinfo) > 0:
         generatesprites()

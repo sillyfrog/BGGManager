@@ -40,7 +40,26 @@ def main():
 
     dbconn().run("UPDATE games SET imgid = next_imgid() WHERE imgid IS NULL;")
     dbconn().run("ALTER TABLE games ALTER COLUMN imgid SET DEFAULT next_imgid();")
-    dbconn(True).run("ALTER TABLE games ADD CONSTRAINT games_imgid_key UNIQUE (imgid);")
+    dbconn().run(
+        """DO $$ BEGIN
+            ALTER TABLE games ADD CONSTRAINT games_imgid_key UNIQUE (imgid);
+        EXCEPTION
+            WHEN duplicate_table THEN null;
+        END $$;"""
+    )
+
+    dbconn().run(
+        """DO $$ BEGIN
+            CREATE TYPE sync_states AS ENUM ('delete', 'update');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;"""
+    )
+    dbconn().run("ALTER TABLE plays ADD COLUMN IF NOT EXISTS sync_state sync_states;")
+
+    dbconn().run(
+        "ALTER TABLE players DROP CONSTRAINT players_playsid_fkey, ADD CONSTRAINT players_playsid_fkey FOREIGN KEY (playsid) REFERENCES plays(id) ON DELETE CASCADE;"
+    )
 
     common.generatesprites()
 
