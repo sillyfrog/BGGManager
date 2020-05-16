@@ -56,15 +56,17 @@ You can also run this in the Web interface by connecting to the interface (on wh
 
 You can also setup a daily cron job on the _host_ (not in the container), to regularly sync with BGG - see the `update-boardgamegeek-stats.cron` file for what I have in my cron.daily.
 
+This script is also what uploads recorded plays, including modifications and deletions. The sync is mostly one way, so if editing a play, always do it in the local DB to get pushed to BGG.
+
 ## LED's 
 
 To highlight the LED's, see the https://github.com/sillyfrog/BGGManagerLEDLocator project for details.
 
 # Barcode scanning
 
-The latest release includes the (optional) ability to scan barcodes on the boxes to make putting games away much easier. If the `pillow` and `pyzbar` Python modules are installed, you will be able to take a photo of the barcode, and use this as part of the "Put Away" option. Initially you'll need to populate your database with all of your bar codes. On a specific game, right at the bottom there is an _Associate Barcode_ button, clicking on this will take you to the barcode scanning screen. After giving access to the camera on your device (phone or tablet recommended), you can select which camera to use (the rear is recommended, the image should not be mirrored), you can tap the image when you have the barcode lined up. The decoding is done using the [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar) library, so it has the same limitations. Quality is better than size I have found (ie: sometimes it's better to have the image smaller to be sharper).     
+The latest release includes the ability to scan barcodes on the boxes to make putting games away much easier. This uses the [ZXing-js](https://github.com/zxing-js/library/) library and requires . a recent browser/device. Initially you'll need to populate your database with all of your bar codes. On a specific game, right at the bottom there is an _Associate Barcode_ button, clicking on this will take you to the barcode scanning screen. After giving access to the camera on your device (phone or tablet recommended), you can select which camera to use (the rear is recommended, the image should not be mirrored), you can tap line up the image and when a barcode is detected, it'll associate it with the game. Quality is better than size I have found (ie: sometimes it's better to have the image smaller to be sharper). The library supports a variety of barcodes, including QR codes (recommended if you have them). I'll often associate both a bar code and QR code if it's printed on the box (eg: the QR code may link to a rules web page, but the actual content does not matter).
 
-Barcode and camera support requires the latest OS and Browser. I have tested with Firefox v66 and on iOS 12 with Safari (it does not work with iOS Firefox at the time of my testing). Additionally, in my reading, webcam access is only provided to HTTPS sites, so it needs to be running behind an HTTPS/SSL gateway (I use my [Magic Reverse Proxy](https://github.com/sillyfrog/magicreverseproxy)).
+Barcode and camera support requires the latest OS and Browser. I have tested with Firefox v66/v76 and on iOS 12/13 with Safari (it does not work with iOS Firefox at the time of my testing). Additionally, in my reading, webcam access is only provided to HTTPS sites, so this site will need to be running behind an HTTPS/SSL gateway (I use my [Magic Reverse Proxy](https://github.com/sillyfrog/magicreverseproxy) or [Traefik](https://docs.traefik.io/)).
 
 # Updating
 
