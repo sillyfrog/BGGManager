@@ -263,8 +263,11 @@ def processbarcode():
     if content.get("bggid"):
         # Have a game ID, associate with the game, then redirect back
         common.dbconn(ignoreerror=True).run(
-            "INSERT INTO barcodes (bggid, barcode) VALUES (%s, %s);",
-            [content["bggid"], code],
+            """INSERT INTO barcodes (bggid, barcode) 
+                VALUES (%(bggid)s, %(code)s)
+            ON CONFLICT (barcode) DO UPDATE
+                SET bggid = %(bggid)s;""",
+            {"bggid": content["bggid"], "code": code},
         )
         rethtml = "<h3>Added code: {}</h3>".format(code)
         js = """setTimeout(function () {{
@@ -283,10 +286,11 @@ def processbarcode():
             rethtml += "<p>Barcode: {}</p>".format(code)
         else:
             loc = locate(bggid)
+            rethtml = "<small>{}</small>".format(code)
             if loc == "FAIL":
-                rethtml = "<h1>No Location Configured</h1>"
+                rethtml += "<h1>No Location Configured</h1>"
             else:
-                rethtml = "<h2> Location: {}</h2>".format(loc)
+                rethtml += "<h2> Location: {}</h2>".format(loc)
             gameinfo = common.querygames(bggid)
             rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
                 bggid, gameinfo["name"]

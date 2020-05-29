@@ -62,6 +62,7 @@ function updateinfo() {
             document.getElementById("updateinfo").innerHTML = response;
             b.classList.remove('btn-info');
             b.classList.add('btn-success');
+            locategame();
         });
 }
 
