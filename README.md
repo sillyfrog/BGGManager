@@ -75,3 +75,9 @@ The latest release requires some updates to the DB, and this data will need to b
 # Development
 
 I have done all my development in `vscode`, and there is a `.devcontainer` configured. To use this, copy the `devconfig-sample.json` to the root directory as `config.json`, and update your BGG username and password. After you run the _Reopen in Container_ command in vscode, open a terminal, and run the `run-dev-server` script. This will create the required tables, and start the flask server, and keep it running in a loop should it crash etc. You should also run `updategames.py` at least once to populate the DB with some data for testing.
+
+### License
+
+GPL v3, please see _LICENSE_ file for all details.
+
+Icon made by Flat Icons.

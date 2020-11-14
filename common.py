@@ -130,7 +130,7 @@ def generatesprites():
     games = dbconn().all(
         "SELECT bggid, imgid FROM games WHERE imgid > 0 ORDER BY imgid;"
     )
-    height = math.ceil(maximgs / SPRITE_WIDTH)
+    height = math.ceil((maximgs + 1) / SPRITE_WIDTH)
     height = (SPRITE_SPACING + MINI_THUMB_SIZE) * height + SPRITE_SPACING
     width = (SPRITE_SPACING + MINI_THUMB_SIZE) * SPRITE_WIDTH + SPRITE_SPACING
     sprite = Image.new("RGB", (width * SPRITE_SCALE, height * SPRITE_SCALE), "white")
@@ -563,8 +563,7 @@ MAX_SESSION_AGE = 600
 
 
 def getbggsession():
-    """Returns a logged BGG session, using a cached connection if fresh
-    """
+    """Returns a logged BGG session, using a cached connection if fresh"""
 
     if bggsession.get("logintime", 0) < (time.time() - MAX_SESSION_AGE):
         s = requests.Session()
@@ -623,8 +622,7 @@ def postplay(playdata):
 
 
 def postdeleteplay(play):
-    """Deletes the given play ID from BGG
-    """
+    """Deletes the given play ID from BGG"""
     postdata = {
         "action": "delete",
         "finalize": "1",
