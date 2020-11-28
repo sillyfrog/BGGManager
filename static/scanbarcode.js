@@ -1,7 +1,22 @@
 'use strict';
 
-const codeReader = new ZXing.BrowserMultiFormatReader()
-var seenBarcodes = new Set();
+// https://github.com/zxing-js/library/issues/371
+const formats = [
+    ZXing.BarcodeFormat.AZTEC,
+    ZXing.BarcodeFormat.CODABAR,
+    ZXing.BarcodeFormat.CODE_39,
+    ZXing.BarcodeFormat.CODE_128,
+    ZXing.BarcodeFormat.EAN_8,
+    ZXing.BarcodeFormat.EAN_13,
+    ZXing.BarcodeFormat.ITF,
+    ZXing.BarcodeFormat.PDF_417,
+    ZXing.BarcodeFormat.QR_CODE
+]
+const hints = new Map()
+hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats)
+const codeReader = new ZXing.BrowserMultiFormatReader(hints)
+var latestBarcode = null;
+var resetLatestBarcodeId = null;
 
 window.addEventListener("load", function () {
     start();
@@ -114,9 +129,17 @@ function start() {
         if (result) {
             console.log(result);
             var barcode = result.text;
-            if (!seenBarcodes.has(barcode)) {
+            if (latestBarcode != barcode) {
                 foundBarcode(barcode);
-                seenBarcodes.add(barcode);
+                latestBarcode = barcode;
+                if (resetLatestBarcodeId) {
+                    window.clearTimeout(resetLatestBarcodeId);
+                    resetLatestBarcodeId = null;
+                }
+                resetLatestBarcodeId = window.setInterval(function () {
+                    latestBarcode = null;
+                    resetLatestBarcodeId = null;
+                }, 3000);
             }
         }
         if (err && !(err instanceof ZXing.NotFoundException)) {
