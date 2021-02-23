@@ -1,7 +1,6 @@
 # To run in debug/development mode:
 #   FLASK_DEBUG=1 flask run -h 0.0.0.0 -p 80
 from flask import Flask, render_template, request, redirect, Response, jsonify
-import json
 import common
 import copy
 import threading
@@ -305,6 +304,11 @@ def groups():
     return render_template("groups.jinja")
 
 
+@app.route("/players")
+def players():
+    return render_template("players.html")
+
+
 @app.route("/plays/<int(signed=True):bgggameid>")
 def plays(bgggameid):
     return jsonify(common.getplays(bgggameid))
@@ -324,9 +328,9 @@ def deleteplay():
     return "OK"
 
 
-@app.route("/playernames")
-def playernames():
-    return jsonify(common.getplayernames())
+@app.route("/playerdetails")
+def playerdetails():
+    return jsonify(common.getplayerdetails())
 
 
 @app.route("/getgroups")
@@ -341,9 +345,15 @@ def updategroups():
     return "OK"
 
 
+@app.route("/updateplayers", methods=["GET", "POST"])
+def updateplayers():
+    content = request.json
+    common.updateplayers(content)
+    return "OK"
+
+
 def justint(src):
-    """Returns an int, stripping non-digit trailing characters
-    """
+    """Returns an int, stripping non-digit trailing characters"""
     while src and not src[-1].isdigit():
         src = src[:-1]
     return int(src)

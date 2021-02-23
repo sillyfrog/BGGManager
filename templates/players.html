@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+{% from 'tools.jinja' import navbar, header %}
+
+<head>
+  {{ header("Player Names") }}
+  <meta name="viewport" content="width=device-width; initial-scale=1.0;" />
+  <script>
+    function updatePlayers() {
+      fetch('/playerdetails')
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (response) {
+          var tbody = document.getElementById("players");
+          while (tbody.rows.length > 0) tbody.deleteRow(-1);
+          // Add an empty row to allow adding new names
+          response.push({ 'bggname': '' })
+          for (player of response) {
+            row = tbody.insertRow();
+            var cell = row.insertCell();
+            var input = document.createElement("input");
+            input.name = "bggname";
+            input.value = player.bggname;
+            cell.appendChild(input);
+
+            cell = row.insertCell();
+            input = document.createElement("input");
+            input.name = "realname";
+            if (player.realname) {
+              input.value = player.realname;
+            }
+            cell.appendChild(input);
+          }
+        });
+    }
+
+    function savePlayers() {
+      var tbody = document.getElementById("players");
+      var b = document.getElementById("save");
+      b.innerHTML = "Saving... ";
+      b.classList.remove('btn-primary');
+      b.classList.remove('btn-success');
+      b.classList.remove('btn-danger');
+      b.classList.add('btn-info');
+      var players = [];
+      for (row of tbody.rows) {
+        var jqrow = $(row);
+        var bggname = jqrow.find("input[name=bggname]")[0].value;
+        var realname = jqrow.find("input[name=realname]")[0].value;
+        if (!bggname || !realname) {
+          continue;
+        }
+        players.push({ "bggname": bggname, "realname": realname })
+      };
+      fetch('/updateplayers', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(players)
+      })
+        .then(function (response) {
+          return response.text();
+        })
+        .then(function (response) {
+          updatePlayers();
+          b.innerHTML = "Saved!";
+          b.classList.remove('btn-primary');
+          b.classList.remove('btn-info');
+          b.classList.remove('btn-danger');
+          b.classList.add('btn-success');
+        });
+    }
+  </script>
+  <script type="text/javascript" src="/static/game.js"></script>
+</head>
+
+<body onLoad="updatePlayers();">
+  {{ navbar('Players') }}
+  <p>Use this table to put in the real name of players to make sure they are remembered. These real names stay local,
+    and are only used for lookups, they are never syncronised with BGG.</p>
+  <table class="table table-sm table-hover">
+    <thead>
+      <th>BGG Name</th>
+      <th>Real Name</th>
+    </thead>
+    <tbody id="players">
+    </tbody>
+  </table>
+  <button id="save" class="btn btn-primary btn-lg btn-block" onClick="savePlayers();">Update Players</button>
+  <p>&nbsp;</p>
+</body>
+
+</html>

@@ -61,6 +61,17 @@ def main():
         "ALTER TABLE players DROP CONSTRAINT players_playsid_fkey, ADD CONSTRAINT players_playsid_fkey FOREIGN KEY (playsid) REFERENCES plays(id) ON DELETE CASCADE;"
     )
 
+    dbconn().run(
+        """
+        CREATE TABLE IF NOT EXISTS playerdetails
+            (
+                id SERIAL UNIQUE,
+                bggname TEXT UNIQUE,
+                realname TEXT
+            );
+        """
+    )
+
     common.generatesprites()
 
 

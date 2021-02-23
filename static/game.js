@@ -1,17 +1,45 @@
-var playernames = ['Example', 'Names', 'Here'];
+// Typeahead docs: https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md#api
+var players = [
+    { 'bggname': 'Example', 'realname': "Mr Example" },
+    { 'bggname': 'Names' },
+    { 'bggname': 'Here' }
+];
+var playernames = [];
+var playermappings = {};
 var currentPlayId = null;
 var gamePlays = {};
 
 $(document).ready(function () {
     // Update the list of available usernames
-    fetch('/playernames')
+    fetch('/playerdetails')
         .then(function (response) {
             return response.json();
         })
         .then(function (response) {
-            playernames = response;
+            players = response;
+            for (player of players) {
+                if (player.realname) {
+                    var name = player.bggname + " (" + player.realname + ")";
+                } else {
+                    var name = player.bggname;
+                }
+                playernames.push(name);
+                playermappings[name] = player;
+            }
         });
 });
+
+// For a given full name including real name, returns the bggplayer name if there's a 
+// match, otherwise the value is returned
+function bggnamer(playername) {
+    if (playername.indexOf("(") > 0) {
+        // Has a bracket, could have a real name
+        if (playermappings[playername]) {
+            return playermappings[playername].bggname;
+        }
+    }
+    return playername;
+}
 
 function locategame() {
     var b = document.getElementById("locate");
@@ -231,6 +259,7 @@ function recordPlay() {
         var jqrow = $(row);
         var playername = jqrow.find("input[name=player]")[0].value;
         if (playername.length > 0) {
+            playername = bggnamer(playername);
             players.push({
                 "name": playername,
                 "color": jqrow.find("input[name=color]")[0].value,
@@ -292,6 +321,7 @@ function resetLogPlayForm() {
 
 function blurPlayer(obj) {
     if (obj.value) {
+        $(obj).typeahead('val', bggnamer(obj.value));
         if (($(obj).closest('tr').index() + 1) == $(obj).closest('tbody')[0].rows.length) {
             addNewPlayPlayer();
         }

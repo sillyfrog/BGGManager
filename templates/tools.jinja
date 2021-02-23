@@ -25,7 +25,7 @@
           More
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            {% for item in [('/customgame/0', 'New Custom Game'), ('/layout', 'Layout'), ('/layout/usedshelves', 'Used Shelves'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')] %}
+            {% for item in [('/players', 'All Players'), ('/customgame/0', 'New Custom Game'), ('/layout', 'Layout'), ('/layout/usedshelves', 'Used Shelves'), ('/sync', 'Force Sync'), ('/groups', 'Game Groups')] %}
               <a class="dropdown-item {% if request.path == item[0] %} active {% endif %}" href="{{ item[0] }}">{{ item[1] }}</a>
             {% endfor %}
           </div>

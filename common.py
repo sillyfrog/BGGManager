@@ -403,28 +403,54 @@ def updateinfo(bggid=None, gameid=None, col=None, row=None, groupid=None):
                 updateinfo(gameid=expansion.id, groupid=groupid)
 
 
-EXCLUDE_NAMES = CONFIG.get("excludednames", []) + [""]
+EXCLUDE_NAMES = set(CONFIG.get("excludednames", []) + [""])
 PRIORITY_NAMES = CONFIG.get("prioritynames", [])
 
 
-def getplayernames():
-    """Returns a list of all player names.
+def getplayerdetails():
+    """Returns a list of all player names and associated details.
 
-    This list is cleaned up slightly.
+    This list is cleaned up and sortedr using EXCLUDE_NAMES and PRIORITY_NAMES
     """
-    names = dbconn().all(
-        """
+    details = dbconn().all(
+        """SELECT * FROM playerdetails ORDER BY bggname;""", back_as=dict
+    )
+    bggnames = set(
+        dbconn().all(
+            """
         SELECT DISTINCT name FROM players ORDER BY name;
         """
+        )
     )
-    names = set(names)
-    names = names - set(EXCLUDE_NAMES)
-    names = names - set(PRIORITY_NAMES)
-    names = list(names)
-    names.sort()
-    firstnames = PRIORITY_NAMES
-    names = firstnames + names
-    return names
+    nameset = set([x["bggname"] for x in details])
+    # Also add in all priority names
+    bggnames.update(PRIORITY_NAMES)
+    # Find any missed names
+    missednames = bggnames - nameset
+    for missedname in list(missednames):
+        details.append({"bggname": missedname})
+
+    # Preserve the correct order, strip out excluded and priority names
+    # done is an indexed loop to allow poping off elements
+    i = 0
+    prioritydetails = {}
+    while i < len(details):
+        if details[i]["bggname"] in EXCLUDE_NAMES:
+            del details[i]
+        elif details[i]["bggname"] in PRIORITY_NAMES:
+            prioritydetails[details[i]["bggname"]] = details[i]
+            del details[i]
+        else:
+            i += 1
+
+    details.sort(key=lambda name: name["bggname"])
+
+    revnames = PRIORITY_NAMES[:]
+    revnames.reverse()
+    for name in revnames:
+        details.insert(0, prioritydetails[name])
+
+    return details
 
 
 ALL = 1
@@ -651,6 +677,18 @@ def updategroups(groups):
         else:
             group["id"] = int(group["id"])
             dbconn().run("UPDATE groups SET name = %(name)s WHERE id = %(id)s;", group)
+
+
+def updateplayers(players):
+    for player in players:
+        dbconn().run(
+            """
+            INSERT INTO playerdetails (bggname, realname) VALUES (%(bggname)s, %(realname)s)
+            ON CONFLICT ON CONSTRAINT playerdetails_bggname_key
+                DO UPDATE SET realname=%(realname)s
+            """,
+            player,
+        )
 
 
 if __name__ == "__main__":
