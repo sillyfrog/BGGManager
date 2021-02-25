@@ -132,7 +132,6 @@ def gamelayout():
         for col in columns:
             shelf = layout.get((col, row))
             if shelf:
-                print("Shelf:", shelf)
                 style = "border: 2px solid black;"
                 if not shelf[0].get("topofsection"):
                     style += "border-top: 1px solid #ddd;"
@@ -284,16 +283,20 @@ def processbarcode():
             rethtml = "<h1>No Game Found Matching Barcode</h1>"
             rethtml += "<p>Barcode: {}</p>".format(code)
         else:
-            loc = locate(bggid)
+            game = common.querygames(bggid=bggid, extendedlocation=True)
+
             rethtml = "<small>{}</small>".format(code)
-            if loc == "FAIL":
+            if game["row"] is None or game["col"] is None:
                 rethtml += "<h1>No Location Configured</h1>"
             else:
+                highlightleds(game)
+                loc = "Col: {}, Row: {} ({})".format(
+                    game["col"], game["row"], game["distancetxt"]
+                )
+                if common.CONFIG.get("showlocationtable", True):
+                    loc += "<br>" + game["locationhtml"]
                 rethtml += "<h2> Location: {}</h2>".format(loc)
-            gameinfo = common.querygames(bggid)
-            rethtml += '<p><a href="/game/{}">{}</a></p>'.format(
-                bggid, gameinfo["name"]
-            )
+            rethtml += '<p><a href="/game/{}">{}</a></p>'.format(bggid, game["name"])
     rethtml += "<p>Tap to clear</p>"
     ret["html"] = rethtml
     return jsonify(ret)
@@ -359,17 +362,10 @@ def justint(src):
     return int(src)
 
 
-@app.route("/locate/<int(signed=True):bggid>")
-def locate(bggid):
-    game = common.querygames(bggid=bggid, formatvals=False, extendedlocation=True)
-    if game["row"] is None or game["col"] is None:
-        print("Game NOT found :( ")
-        return "FAIL"
-
-    ret = "Col: {}, Row: {} ({})".format(game["col"], game["row"], game["distancetxt"])
+def highlightleds(game):
+    """Calls the configured function to hightlight where the game should go"""
     # Figure out which LED we shuold light up
     section = game["sectionconfig"]
-    print(section)
     if "ledstrips" in section:
         leds = []
         for striptxt, ledrange in section["ledstrips"].items():
@@ -399,7 +395,19 @@ def locate(bggid):
             print(cmd)
             t = threading.Thread(target=subprocess.run, args=(cmd,), daemon=True)
             t.start()
-            print("Done run")
+
+
+@app.route("/locate/<int(signed=True):bggid>")
+def locate(bggid):
+    game = common.querygames(bggid=bggid, formatvals=False, extendedlocation=True)
+    if game["row"] is None or game["col"] is None:
+        print("Game NOT found :( ")
+        return "FAIL"
+
+    ret = "Col: {}, Row: {} ({})".format(game["col"], game["row"], game["distancetxt"])
+    if common.CONFIG.get("showlocationtable", True):
+        ret += "<br>" + game["locationhtml"]
+    highlightleds(game)
 
     return ret
 

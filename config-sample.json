@@ -2,6 +2,7 @@
     "username": "<bggusername>",
     "password": "<bggpassword>",
     "dburl": "postgres://<username>:<password>@<postgres host>/<games db>",
+    "showlocationtable": true,
     "ledscommand": [
         "./homieleds",
         "-H",

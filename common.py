@@ -332,6 +332,42 @@ def locationinfo(game):
             msg += " of {} section".format(section["name"])
         game["distancetxt"] = msg
 
+        def gamesincellhtml(row):
+            games = dbconn().all(
+                """
+            SELECT gamesinfo.*, games.name
+            FROM gamesinfo INNER JOIN games ON gamesinfo.gamesid = games.id
+            WHERE col = %s AND row = %s AND gamesid != %s
+            """,
+                [game["col"], row, game["id"]],
+            )
+            htmldivs = []
+            for g in games:
+                htmldivs.append(
+                    '<div class="closegame">{}</div>'.format(html.escape(g.name))
+                )
+            return "\n".join(htmldivs)
+
+        # Get info about games all around this game
+        if beforecount > 0:
+            gamesbefore = gamesincellhtml(sectionrows[beforecount - 1])
+        else:
+            gamesbefore = "&nbsp;"
+        if aftercount > 0:
+            gamesafter = gamesincellhtml(sectionrows[beforecount + 1])
+        else:
+            gamesafter = "&nbsp;"
+        gameswith = gamesincellhtml(game["row"])
+        thisgame = '<div class="thisgame">{}</div>'.format(html.escape(game["name"]))
+
+        game[
+            "locationhtml"
+        ] = f"""<table class="closegames">
+            <tr><td>{gamesbefore}</td></tr>
+            <tr><td>{thisgame} {gameswith}</td></tr>
+            <tr><td>{gamesafter}</td></tr>
+            </table>"""
+
 
 def thnumber(num):
     lastdigit = int(str(num)[-1])

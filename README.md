@@ -4,8 +4,6 @@ Provides an interface to allow searching for games in your Board Game Geek (BGG)
 
 It will sync with BGG, and is designed to be used with https://github.com/sillyfrog/BGGManagerLEDLocator to highlight your desired game.
 
-*Note:* This update includes a breaking change to configuration for the LED strips. See below for the updated format.
-
 # Setup
 
 This has been designed to run in Docker, however it should be OK outside Docker, however it's untested. Containers that are required (to get the full system) are:
@@ -32,6 +30,7 @@ There is a sample `config.json`, I would suggest starting with this for your env
 
 - _username_/_password_: This is your login to BGG to sync all of your games.
 - _dburl_: The URL to connect to the Postgres server, update for what you have configured for your DB.
+- _showlocationtable_ (optional): if true (default), a small table showing the location of the game relative to others will be displayed whenever the game lotation is shown on screen.
 - _ledscommand_: this is the command to call when you want to highlight your game - currently all that's included is `homieleds`. The program will be called with each argument in the list, and to the end will be appended the `<col>,<led>` for each LED to highlight.
 - _excludednames_ (optional): a list of names that will be excluded from the Player list when logging players. Useful to exclude names with typo's that may have made it into the DB.
 - _prioritynames_ (optional): names to always be at the top of the Player list when logging plays, in the same order (other names are sorted alphabetically). Ideal for frequent players so you can tap without typing. We list everyone in our household in this list.
@@ -39,16 +38,17 @@ There is a sample `config.json`, I would suggest starting with this for your env
   - _id_: The numeric id of the column. Trailing characters (non-digits) maybe included that will be stripped to allow creating what would otherwise be duplicate keys.
   - _name_: The name of the column you want to display in the web interface, I have just used the ID's, but it's designed to be flexible.
   - _sections_: This is each section in the column, a list of objects. For example, in the sample JSON the sections are a topper, then two full height BoxThrones. This is done in the order top to bottom. The attributes of each section are:
-     - _name_: The name of the section, to display in the web interface.
-     - _start_: The row that the sections starts at in the column, this is the count of holes in the BoxThrone (including the base). It's every potential location you could put a game.
-     - _end_: The last row of the section.
-     - _ledstrips_: Optional, an object whose key is the strip ID (pole), this is a string of the integer, and value is a list with 2 elements of _ledstart_ and _ledend_ that should be included - you can for example highlight the poles on either side of the game that's highlighted, so may include more than one strip.
-          - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
-          - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
+    - _name_: The name of the section, to display in the web interface.
+    - _start_: The row that the sections starts at in the column, this is the count of holes in the BoxThrone (including the base). It's every potential location you could put a game.
+    - _end_: The last row of the section.
+    - _ledstrips_: Optional, an object whose key is the strip ID (pole), this is a string of the integer, and value is a list with 2 elements of _ledstart_ and _ledend_ that should be included - you can for example highlight the poles on either side of the game that's highlighted, so may include more than one strip.
+      - _ledstart_: The count (from zero) of the LED's that are included in this section - the program will extrapolate which LED's to highlight.
+      - _ledend_: The last count of the LED in this section. If the LED's are starting at the bottom, the _ledend_ should be greater than the _ledstart_.
 
 ## Synchronizing with BGG
 
 Once everything is up and running, you should run the `updategames.py` script. This will synchronize with BGG, including filling the local cache, and downloading images etc. If running in docker, do the following:
+
 - Connect to the running container: `docker run -it boardgamegeek bash`
 - Then run the script: `/app/updategames.py`
 
@@ -58,7 +58,7 @@ You can also setup a daily cron job on the _host_ (not in the container), to reg
 
 This script is also what uploads recorded plays, including modifications and deletions. The sync is mostly one way, so if editing a play, always do it in the local DB to get pushed to BGG.
 
-## LED's 
+## LED's
 
 To highlight the LED's, see the https://github.com/sillyfrog/BGGManagerLEDLocator project for details.
 
