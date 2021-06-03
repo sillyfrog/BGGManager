@@ -15,6 +15,14 @@ def initialtablesetup():
 
 
 def main():
+    try:
+        c = postgres.Postgres(common.CONFIG["dburl"])
+        c.run("SELECT id FROM games LIMIT 1;")
+    except:
+        # games table does not exist, create all the default tables
+        print("Creating default tables...")
+        initialtablesetup()
+
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS image_w smallint;")
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS image_h smallint;")
     dbconn().run("ALTER TABLE games ADD COLUMN IF NOT EXISTS thumb_w smallint;")

@@ -18,7 +18,23 @@ The "build-run-image.sh" shows an example of how to build and run the Docker ima
 
 I'm using the Docker Hub Postgres image, and have a basic setup. See the docs at https://hub.docker.com/_/postgres/ for how to do this.
 
-Once you have Postgres up and running, connect to the DB and run the SQL in `setup.sql`, then run the `./upgradedb.py` script, or run the `./upgradedb.py` script with a valid config.json. This will create all of the required tables etc and update them for the current release.
+To create a dedicated database, run commands such as the following from the Postgres prompt:
+
+```
+games=# CREATE DATABASE games;
+CREATE DATABASE
+games=# CREATE USER games WITH ENCRYPTED PASSWORD 'secret';
+CREATE ROLE
+games=# GRANT ALL PRIVILEGES ON DATABASE games TO games;
+```
+
+You would then include a line such as the following in your `config.json`:
+
+```
+    "dburl": "postgres://games:secret@postgres/games",
+```
+
+Once you have Postgres up and running, connect to the DB and run the `./upgradedb.py` script with a valid config.json. This will create all of the required tables etc and update them for the current release. This script should be run after every update.
 
 ## MQTT
 

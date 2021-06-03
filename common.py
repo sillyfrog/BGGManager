@@ -363,9 +363,9 @@ def locationinfo(game):
         game[
             "locationhtml"
         ] = f"""<table class="closegames">
-            <tr><td>{gamesbefore}</td></tr>
-            <tr><td>{thisgame} {gameswith}</td></tr>
-            <tr><td>{gamesafter}</td></tr>
+            <tr><td class="top">{gamesbefore}</td></tr>
+            <tr><td class="this">{thisgame} {gameswith}</td></tr>
+            <tr><td class="bottom">{gamesafter}</td></tr>
             </table>"""
 
 
