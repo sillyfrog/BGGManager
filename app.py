@@ -279,6 +279,17 @@ def processbarcode():
         bggid = common.dbconn().one(
             "SELECT bggid FROM barcodes WHERE barcode = %s;", [code]
         )
+        if (
+            bggid is None
+            and common.CONFIG.get("baseurl")
+            and code.startswith(common.CONFIG["baseurl"])
+        ):
+            lookupid = code[len(common.CONFIG["baseurl"]) :]
+            if lookupid:
+                bggid = common.dbconn().one(
+                    "SELECT bggid FROM games WHERE bggid = %s;", [lookupid]
+                )
+
         if bggid is None:
             rethtml = "<h1>No Game Found Matching Barcode</h1>"
             rethtml += "<p>Barcode: {}</p>".format(code)
