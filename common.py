@@ -630,10 +630,15 @@ def getbggsession():
     if bggsession.get("logintime", 0) < (time.time() - MAX_SESSION_AGE):
         s = requests.Session()
         r = s.post(
-            "https://boardgamegeek.com/login",
-            {"username": CONFIG["username"], "password": CONFIG["password"]},
+            "https://boardgamegeek.com/login/api/v1",
+            json={
+                "credentials": {
+                    "username": CONFIG["username"],
+                    "password": CONFIG["password"],
+                }
+            },
         )
-        if r.status_code != 200:
+        if r.status_code != 202:
             raise Exception("Error logging in ({}): {}".format(r.status_code, r.text))
         bggsession["session"] = s
         bggsession["logintime"] = time.time()
