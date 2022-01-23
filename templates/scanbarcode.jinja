@@ -40,19 +40,47 @@
     #alert.on {
       display: block;
     }
+
+    #supervideowrapper {
+      width: 100%;
+      padding: 1em;
+    }
+
+    #videowrapper {
+      display: table;
+      width: 100%;
+      position: relative;
+    }
+
+    #videoborder {
+      position: absolute;
+      left: 0%;
+      right: 0%;
+      top: 0%;
+      bottom: 0%;
+      margin: auto;
+      border: 15px solid rgba(0, 0, 0, 0.6);
+    }
   </style>
 </head>
 
 <body>
   {{ navbar('Put Away Games') }}
   <div id="shutter"></div>
-  <div id="alert" onclick="this.classList.remove('on');"></div>
+  <div id="alert" onclick="this.classList.remove('on');" style="z-index: 10;"></div>
   <div id="container">
     <div class="select">
       <label for="videoSource">Video source:</label> <span id="sourcebuttons"></span></span>
     </div>
 
-    <video id="video" playsinline autoplay style="padding: 1em; width: 100%; height: auto;"></video>
+    <div id="supervideowrapper">
+      <div id="videowrapper">
+        <video id="video" playsinline autoplay style="width: 100%; height: auto;"></video>
+        <div id="videoborder"></div>
+      </div>
+    </div>
+    <button class="btn btn-secondary" onclick="zoomin();">+</button>
+    <button class="btn btn-secondary" onclick="zoomout();">-</button>
   </div>
   {# See: https://github.com/zxing-js/library for source #}
   {# <script src="https://unpkg.com/@zxing/library@latest"></script> v-latest #}

@@ -148,5 +148,51 @@ function start() {
         }
     })
     console.log(`Started continuos decode from camera with id ${videoSource}`);
+
+    // Monkey Patch zoom support in place
+
+
+    codeReader.drawImageOnCanvas = function (canvasElementContext, srcElement) {
+        var borderwidth = 0;
+        var borderheight = 0;
+        if (this.videozoom > 1) {
+            var width = canvasElementContext.canvas.width;
+            var height = canvasElementContext.canvas.height;
+            var zoom = this.videozoom;
+            canvasElementContext.drawImage(srcElement, (width - width / zoom) / 2, (height - height / zoom) / 2, width / zoom, height / zoom, 0, 0, width, height);
+
+            var vidsize = video.getBoundingClientRect();
+            var vidwidth = vidsize.width;
+            var vidheight = vidsize.height;
+            borderwidth = (vidwidth - vidwidth / zoom) / 2;
+            borderheight = (vidheight - vidheight / zoom) / 2;
+        } else {
+            canvasElementContext.drawImage(srcElement, 0, 0);
+        }
+        videoborder.style.borderLeftWidth = borderwidth + "px";
+        videoborder.style.borderRightWidth = borderwidth + "px";
+        videoborder.style.borderTopWidth = borderheight + "px";
+        videoborder.style.borderBottomWidth = borderheight + "px";
+    }
+
+    // Set a default zoom level
+    codeReader.videozoom = 1;
+
+    // To view the current actual canvas:
+    // document.getElementsByTagName("body")[0].appendChild(codeReader.captureCanvas);
+
 }
 
+function zoomin() {
+    codeReader.videozoom += 0.5;
+    if (codeReader.videozoom > 10) {
+        codeReader.videozoom = 10;
+    }
+}
+
+function zoomout() {
+    codeReader.videozoom -= 0.5;
+    if (codeReader.videozoom < 1) {
+        codeReader.videozoom = 1;
+    }
+}
