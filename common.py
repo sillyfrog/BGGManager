@@ -638,7 +638,8 @@ def getbggsession():
                 }
             },
         )
-        if r.status_code != 202:
+        if not r.ok:
+            # if r.status_code not in (202, 204):
             raise Exception("Error logging in ({}): {}".format(r.status_code, r.text))
         bggsession["session"] = s
         bggsession["logintime"] = time.time()
